@@ -14,20 +14,22 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "215ca90b-5f40-4721-b192-975001757f51",
+      serviceWorkerPath: "/sw.js",
+      serviceWorkerParam: { scope: "/" },
     });
     // Torna o objeto OneSignal global para as outras funções
     window.OneSignal = OneSignal;
   });
 </script>
 <title>Studio Focus</title>
-<link rel="icon" href="./icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+<link rel="icon" href="./img/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./img/icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./img/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./img/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="chat-widget.css">
+
 <style>
 :root{
  --pu:#0066FF;--pu2:#3d9aff;--pu3:rgba(0,102,255,.14);--pu4:rgba(0,102,255,.28);
@@ -906,193 +908,6 @@ footer{
  .plans-aval-btn{width:auto}
 }
 
-/* TREINO MODAL + PLANNING [COMENTADO] ====
-.treino-modal-overlay{
- display:none;position:fixed;inset:0;z-index:500;
- background:rgba(0,0,0,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
- align-items:flex-start;justify-content:center;
- overflow-y:auto;padding:max(env(safe-area-inset-top),12px) max(12px,env(safe-area-inset-right)) 40px max(12px,env(safe-area-inset-left));
-}
-@media(min-width:520px){.treino-modal-overlay{align-items:center;padding:24px}}
-.treino-modal-overlay.open{display:flex}
-.treino-modal{
- background:var(--s1);border:1px solid var(--bd2);border-radius:var(--rxl);
- width:100%;max-width:660px;flex-shrink:0;overflow:hidden;
- box-shadow:0 24px 64px rgba(0,0,0,.5);
-}
-.treino-modal-header{
- display:flex;align-items:center;justify-content:space-between;
- padding:14px 18px;border-bottom:1px solid var(--bd);background:var(--s2);
-}
-.treino-modal-title{font-family:var(--ff);font-size:19px;letter-spacing:2px;color:var(--tx);display:flex;align-items:center;gap:8px}
-.treino-modal-close{
- width:34px;height:34px;border-radius:50%;border:1px solid var(--bd2);background:transparent;
- color:var(--mt);font-size:17px;display:flex;align-items:center;justify-content:center;transition:background .2s;
-}
-.treino-modal-close:hover{background:var(--s3)}
-.treino-filter-row{
- display:flex;gap:6px;overflow-x:auto;padding:10px 18px;
- border-bottom:1px solid var(--bd);background:var(--s2);scrollbar-width:none;
-}
-.treino-filter-row::-webkit-scrollbar{display:none}
-.treino-filter-btn{
- flex-shrink:0;padding:5px 14px;border-radius:99px;border:1px solid var(--bd2);
- background:transparent;color:var(--mt);font-size:11px;font-weight:700;letter-spacing:.6px;
- transition:all .2s;white-space:nowrap;
-}
-.treino-filter-btn.active,.treino-filter-btn:hover{background:var(--pu);border-color:var(--pu);color:#fff}
-.treino-cards{
- display:grid;grid-template-columns:1fr;gap:10px;
- padding:14px 18px 18px;max-height:62vh;overflow-y:auto;
-}
-@media(min-width:460px){.treino-cards{grid-template-columns:1fr 1fr}}
-.ex-card{
- border:1px solid var(--bd);border-radius:var(--r);background:var(--s2);overflow:hidden;
- transition:border-color .2s,transform .15s,box-shadow .2s;cursor:default;
-}
-.ex-card:hover{border-color:rgba(61,154,255,.45);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,102,255,.12)}
-.ex-card-visual{
- height:110px;display:flex;align-items:center;justify-content:center;
- background:linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
- font-size:44px;position:relative;overflow:hidden;
- border-bottom:1px solid var(--bd);
-}
-.ex-muscle-glow{
- position:absolute;width:64px;height:64px;border-radius:50%;pointer-events:none;
- animation:musclePulse 2.2s ease-in-out infinite;
-}
-@keyframes musclePulse{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
-.ex-hud{
- position:absolute;top:6px;right:6px;background:rgba(0,10,30,.7);border:1px solid rgba(61,154,255,.3);
- border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:.8px;
- color:var(--pu2);backdrop-filter:blur(4px);
-}
-.ex-card-body{padding:10px 12px 12px}
-.ex-card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
-.ex-badge{font-size:10px;font-weight:700;letter-spacing:.4px;padding:2px 8px;border-radius:99px}
-.badge-costas{background:rgba(61,154,255,.16);color:var(--pu2)}
-.badge-peito{background:rgba(239,68,68,.16);color:#f87171}
-.badge-pernas{background:rgba(34,197,94,.16);color:#4ade80}
-.badge-ombros{background:rgba(168,85,247,.16);color:#c084fc}
-.badge-biceps{background:rgba(249,115,22,.16);color:#fb923c}
-.badge-triceps{background:rgba(234,179,8,.16);color:#fbbf24}
-.badge-abs{background:rgba(20,184,166,.16);color:#2dd4bf}
-.badge-inic{background:rgba(34,197,94,.14);color:#4ade80}
-.badge-inter{background:rgba(249,115,22,.14);color:#fb923c}
-.badge-avanc{background:rgba(239,68,68,.14);color:#f87171}
-.ex-card-name{font-weight:700;font-size:13px;color:var(--tx);margin-bottom:2px;line-height:1.3}
-.ex-card-en{font-size:10px;color:var(--mt);margin-bottom:8px;font-style:italic}
-.ex-card-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.ex-card-series{font-size:11px;font-weight:700;color:var(--pu2);background:var(--pu3);padding:3px 8px;border-radius:6px}
-.ex-card-equip{font-size:11px;color:var(--mt)}
-.treino-empty{
- grid-column:1/-1;text-align:center;padding:32px;color:var(--mt);font-size:14px;
-}
-
-.ex-add-btn{
- position:absolute;top:6px;left:6px;z-index:2;
- width:28px;height:28px;border-radius:50%;
- border:1.5px solid rgba(255,255,255,.25);background:rgba(0,10,30,.65);
- color:#fff;font-size:18px;line-height:1;
- display:flex;align-items:center;justify-content:center;
- backdrop-filter:blur(4px);transition:background .2s,border-color .2s;
-}
-.ex-add-btn:hover{background:var(--pu);border-color:var(--pu)}
-.ex-dia-indicator{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
-.ex-dia-pill{
- font-size:9px;font-weight:800;letter-spacing:.6px;padding:2px 6px;border-radius:99px;
- background:var(--pu);color:#fff;
-}
-
-.ex-day-selector{
- position:fixed;z-index:600;
- background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r);
- padding:10px;width:190px;
- box-shadow:0 16px 48px rgba(0,0,0,.5);
-}
-.ex-day-selector-title{font-size:10px;font-weight:800;letter-spacing:.8px;color:var(--mt);margin-bottom:8px;text-align:center}
-.ex-day-btn{
- display:block;width:100%;padding:7px 10px;border-radius:7px;text-align:left;
- border:1px solid transparent;background:transparent;color:var(--tx);font-size:13px;font-weight:500;
- transition:background .15s;margin-bottom:3px;
-}
-.ex-day-btn:hover{background:var(--pu3)}
-.ex-day-btn.active{background:var(--pu3);border-color:var(--pu4);color:var(--pu2);font-weight:700}
-.ex-day-cancel{
- display:block;width:100%;padding:6px;border-radius:7px;border:1px solid var(--bd);
- background:transparent;color:var(--mt);font-size:12px;margin-top:4px;
- transition:background .15s;
-}
-.ex-day-cancel:hover{background:var(--s3)}
-
-.plano-modal-overlay{
- display:none;position:fixed;inset:0;z-index:510;
- background:rgba(0,0,0,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
- align-items:flex-start;justify-content:center;
- overflow-y:auto;padding:max(env(safe-area-inset-top),12px) max(12px,env(safe-area-inset-right)) 40px max(12px,env(safe-area-inset-left));
-}
-@media(min-width:520px){.plano-modal-overlay{align-items:center;padding:24px}}
-.plano-modal-overlay.open{display:flex}
-.plano-modal{
- background:var(--s1);border:1px solid var(--bd2);border-radius:var(--rxl);
- width:100%;max-width:520px;flex-shrink:0;overflow:hidden;
- box-shadow:0 24px 64px rgba(0,0,0,.5);
-}
-.plano-modal-header{
- display:flex;align-items:center;justify-content:space-between;
- padding:14px 18px;border-bottom:1px solid var(--bd);background:var(--s2);
-}
-.plano-modal-title{font-family:var(--ff);font-size:19px;letter-spacing:2px;color:var(--tx);display:flex;align-items:center;gap:8px}
-.plano-modal-close{
- width:34px;height:34px;border-radius:50%;border:1px solid var(--bd2);background:transparent;
- color:var(--mt);font-size:17px;display:flex;align-items:center;justify-content:center;transition:background .2s;
-}
-.plano-modal-close:hover{background:var(--s3)}
-.plano-tabs{
- display:flex;gap:4px;overflow-x:auto;padding:10px 14px;
- border-bottom:1px solid var(--bd);background:var(--s2);scrollbar-width:none;
-}
-.plano-tabs::-webkit-scrollbar{display:none}
-.plano-tab{
- flex-shrink:0;position:relative;padding:6px 12px;border-radius:8px;
- border:1px solid var(--bd2);background:transparent;color:var(--mt);
- font-size:11px;font-weight:800;letter-spacing:.6px;transition:all .2s;
-}
-.plano-tab.active{background:var(--pu);border-color:var(--pu);color:#fff}
-.plano-tab-badge{
- position:absolute;top:-5px;right:-5px;
- width:16px;height:16px;border-radius:50%;
- background:var(--gr);color:#fff;font-size:9px;font-weight:800;
- display:flex;align-items:center;justify-content:center;border:2px solid var(--s1);
-}
-.plano-ex-list{padding:12px 14px 16px;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.plano-ex-row{
- display:flex;align-items:center;justify-content:space-between;gap:8px;
- background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;
- transition:border-color .2s;
-}
-.plano-ex-row:hover{border-color:var(--bd2)}
-.plano-ex-info{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0}
-.plano-ex-nome{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px;line-height:1.3}
-.plano-ex-sub{font-size:11px;color:var(--mt)}
-.plano-ex-remove{
- flex-shrink:0;width:28px;height:28px;border-radius:50%;
- border:1px solid var(--bd2);background:transparent;color:var(--mt);font-size:12px;
- display:flex;align-items:center;justify-content:center;transition:all .2s;
-}
-.plano-ex-remove:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#f87171}
-.plano-dia-empty{
- text-align:center;padding:28px 16px;color:var(--mt);font-size:14px;line-height:1.6;
-}
-.plano-empty{text-align:center;padding:40px 20px;color:var(--mt)}
-.plano-clear-btn{
- display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:8px;
- border-radius:8px;border:1px solid rgba(239,68,68,.3);background:transparent;
- color:#f87171;font-size:12px;font-weight:600;transition:background .2s;
-}
-.plano-clear-btn:hover{background:rgba(239,68,68,.1)}
-==== FIM TREINO + PLANNING [COMENTADO] */
-
 /* LUCIDE ICONS */
 .icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .icon svg{width:var(--icon-sz,18px);height:var(--icon-sz,18px);stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -1154,7 +969,7 @@ footer{
 </style>
 
 <!-- Open Graph -->
-<meta property="og:title" content="Studio Focus — Academia em Garça, SP">
+<meta property="og:title" content="Studio Focus - Academia em Garça, SP">
 <meta property="og:description" content="Venha conhecer o Studio Focus sem compromisso. Treine um dia, sinta a diferença.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://studiofocusgarca.com.br/">
@@ -1200,8 +1015,8 @@ footer{
 <!-- NAV -->
 <nav id="main-nav">
  <div class="nav-logo">
- <img src="./image.png" alt="Studio Focus" class="nav-logo-svg" style="border-radius:50%;border:2px solid rgba(61,154,255,.5)"/>
- <span class="nav-brand">STUDIO <b>FOCUS</b></span>
+ <img src="./img/image.png" alt="Studio Focus" class="nav-logo-svg" style="border-radius:50%;border:2px solid rgba(61,154,255,.5)"/>
+ <span class="nav-brand hidden"></span>
  </div>
  <div class="nav-actions">
  <button class="nav-planos-btn" id="nav-planos-btn" onclick="openPlanosModal()">Veja nossos planos</button>
@@ -1223,14 +1038,14 @@ footer{
  <div class="drawer-btn-icon"><span class="icon"><i data-lucide="bar-chart-2"></i></span></div>
  <div class="drawer-btn-txt">
  <div class="drawer-btn-name">Calcular IMC</div>
- <div class="drawer-btn-sub">Índice de Massa Corporal — OMS</div>
+ <div class="drawer-btn-sub">Índice de Massa Corporal - OMS</div>
  </div>
  </button>
  <button class="drawer-btn" id="drawer-cal-btn" onclick="closeDrawer();openModal('cal-modal-overlay')">
  <div class="drawer-btn-icon"><span class="icon"><i data-lucide="flame"></i></span></div>
  <div class="drawer-btn-txt">
  <div class="drawer-btn-name">Calculadora de Calorias</div>
- <div class="drawer-btn-sub">Harris-Benedict — necessidade diária</div>
+ <div class="drawer-btn-sub">Harris-Benedict - necessidade diária</div>
  </div>
  </button>
  <button class="drawer-btn" id="drawer-agua-btn" onclick="closeDrawer();openModal('agua-modal-overlay')">
@@ -1255,37 +1070,12 @@ footer{
  </div>
  </button>
  <button class="drawer-btn" id="drawer-rm-btn" onclick="closeDrawer();openModal('rm-modal-overlay')">
- <div class="drawer-btn-icon"><span class="icon"><i data-lucide="dumbbell"></i></span></div>
+ <div class="drawer-btn-icon"><span class="icon"><img src="./img/image.png" alt="1RM" style="width: 20px; height: 20px; object-fit: contain;"></span></div>
  <div class="drawer-btn-txt">
  <div class="drawer-btn-name">Calculadora de 1RM</div>
  <div class="drawer-btn-sub">Estime sua carga máxima</div>
  </div>
  </button>
- <div class="drawer-section-label" style="margin-top:8px">Alarmes</div>
- <button class="drawer-btn" id="drawer-alarm-btn" onclick="closeDrawer();openAlarmModal()">
- <div class="drawer-btn-icon"><span class="icon"><i data-lucide="bell"></i></span></div>
- <div class="drawer-btn-txt">
- <div class="drawer-btn-name">Alarme de Suplementos</div>
- <div class="drawer-btn-sub">Notificações para creatina e whey</div>
- </div>
- </button>
- <!--
- <div class="drawer-section-label" style="margin-top:8px">Treinos</div>
- <button class="drawer-btn" id="drawer-treino-btn" onclick="closeDrawer();openModal('treino-modal-overlay')">
- <div class="drawer-btn-icon"><span class="icon"><i data-lucide="dumbbell"></i></span></div>
- <div class="drawer-btn-txt">
- <div class="drawer-btn-name">Monte seu Treino</div>
- <div class="drawer-btn-sub">Biblioteca de exercícios com técnica</div>
- </div>
- </button>
- <button class="drawer-btn" id="drawer-plano-btn" onclick="closeDrawer();openWeeklyPlan()">
- <div class="drawer-btn-icon"><span class="icon"><i data-lucide="calendar-days"></i></span></div>
- <div class="drawer-btn-txt">
- <div class="drawer-btn-name">Ver meu treino planejado!</div>
- <div class="drawer-btn-sub">Exercícios organizados por dia da semana</div>
- </div>
- </button>
- -->
  <div class="drawer-section-label" style="margin-top:8px">Academia</div>
  <button class="drawer-btn" onclick="closeDrawer();setTimeout(()=>document.getElementById('diferenciais').scrollIntoView({behavior:'smooth'}),50)">
  <div class="drawer-btn-icon"><span class="icon"><i data-lucide="star"></i></span></div>
@@ -1298,7 +1088,7 @@ footer{
  <div class="drawer-btn-icon"><span class="icon"><i data-lucide="map-pin"></i></span></div>
  <div class="drawer-btn-txt">
  <div class="drawer-btn-name">Localização</div>
- <div class="drawer-btn-sub">R. Silvio Serveline, 37 — Garça SP</div>
+ <div class="drawer-btn-sub">R. Silvio Serveline, 37 - Garça SP</div>
  </div>
  </button>
  <a href="https://wa.me/5514982180923?text=Olá!%20Vim%20pelo%20site%20do%20Studio%20Focus!" class="drawer-whatsapp" onclick="closeDrawer()">
@@ -1537,7 +1327,7 @@ footer{
  </div>
  </div>
  <div class="imc-field sim-range-row">
- <label class="imc-lbl">Treinos/semana — <span class="sim-range-val" id="sim-treino-val">3</span> dias</label>
+ <label class="imc-lbl">Treinos/semana - <span class="sim-range-val" id="sim-treino-val">3</span> dias</label>
  <input class="sim-range" id="sim-treino" type="range" min="0" max="7" value="3">
  <div class="sim-range-label"><span>0 dias</span><span>7 dias</span></div>
  </div>
@@ -1549,7 +1339,7 @@ footer{
  </div>
  </div>
  <div class="imc-field sim-range-row">
- <label class="imc-lbl">Meta — <span class="sim-range-val" id="sim-meta-val">5</span> kg</label>
+ <label class="imc-lbl">Meta - <span class="sim-range-val" id="sim-meta-val">5</span> kg</label>
  <input class="sim-range" id="sim-meta" type="range" min="1" max="40" value="5">
  <div class="sim-range-label"><span>1 kg</span><span>40 kg</span></div>
  </div>
@@ -1568,7 +1358,7 @@ footer{
  <div class="hero-bg"></div>
  <div class="hero-grid"></div>
  <div class="hero-inner">
- <div class="hero-badge"><span class="hero-badge-dot"></span><strong>Garça · SP — Vagas Abertas</strong></div>
+ <div class="hero-badge"><span class="hero-badge-dot"></span><strong>Garça · SP - Vagas Abertas</strong></div>
  <h1>TRANS<br>FORME<br>SEU <em>CORPO</em></h1>
  <p class="hero-sub">Treinamento de qualidade, acompanhamento profissional e estrutura completa para você evoluir de verdade.</p>
  <div class="hero-ctas">
@@ -1679,7 +1469,7 @@ footer{
  <div class="plan-feat-check"></div>
  <div>
  <div class="plan-feat-title">Treino inicial montado para você</div>
- <div class="plan-feat-desc">Você não começa perdido — inicia com treino organizado.</div>
+ <div class="plan-feat-desc">Você não começa perdido - inicia com treino organizado.</div>
  </div>
  </div>
  <div class="plan-feat">
@@ -1800,38 +1590,16 @@ footer{
  <div class="location-item reveal"><div class="loc-icon"><svg class="loc-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><div class="loc-label">Avaliação</div><div class="loc-value">4.8 / 5.0 · 20+ avaliações<br><a href="https://www.google.com/maps/search/Rua+Silvio+Serveline+37+Garca+SP" target="_blank">Ver no Google Maps →</a></div></div></div>
  </div>
  <div class="map-embed reveal">
- <div class="map-visual">
- <div class="map-visual-bg">
- <svg class="map-street-svg" viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
-  <rect width="500" height="320" fill="currentColor" opacity="0.04"/>
-  <rect x="0"   y="0"   width="110" height="90" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="126" y="0"   width="110" height="90" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="252" y="0"   width="110" height="90" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="378" y="0"   width="122" height="90" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="0"   y="106" width="110" height="110" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="126" y="106" width="110" height="110" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="252" y="106" width="110" height="110" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="378" y="106" width="122" height="110" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="0"   y="232" width="110" height="88" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="126" y="232" width="110" height="88" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="252" y="232" width="110" height="88" rx="3" fill="currentColor" opacity="0.08"/>
-  <rect x="378" y="232" width="122" height="88" rx="3" fill="currentColor" opacity="0.08"/>
- </svg>
- <div class="map-pin" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-100%)">
- <div class="map-pin-icon"><svg style="width:48px;height:48px;stroke:var(--pu2);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 4px 12px rgba(0,102,255,.6))" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
- <div class="map-pin-pulse"></div>
- </div>
- <div class="map-label-card">
- <div class="map-label-name">Studio Focus</div>
- <div class="map-label-addr">R. Silvio Serveline, 37</div>
- <div class="map-label-addr">Garça · SP</div>
- </div>
- </div>
- <a href="https://www.google.com/maps/search/Rua+Silvio+Serveline+37+Bairro+Williams+Garca+SP" target="_blank" rel="noopener" class="map-open-btn">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
- Abrir no Google Maps
- </a>
- </div>
+ <iframe
+   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3694.4876860788!2d-49.65487452394655!3d-22.218765341099857!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94bf622b2e1f4fb3%3A0x0!2sR.+Silvio+Serveline%2C+37+-+Bairro+Williams%2C+Gar%C3%A7a+-+SP!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
+   width="100%"
+   height="100%"
+   style="border:0; min-height:300px; display:block;"
+   allowfullscreen=""
+   loading="lazy"
+   referrerpolicy="no-referrer-when-downgrade"
+   title="Localização Studio Focus - R. Silvio Serveline, 37, Garça SP">
+ </iframe>
  </div>
  </div>
 </section>
@@ -1874,511 +1642,6 @@ footer{
  </div>
 </div>
 
-<!--
-<div class="plano-modal-overlay" id="plano-modal-overlay">
- <div class="plano-modal">
-  <div class="plano-modal-header">
-   <div class="plano-modal-title">MEU TREINO SEMANAL</div>
-   <button class="plano-modal-close" id="plano-modal-close" aria-label="Fechar">&#x2715;</button>
-  </div>
-  <div id="plano-content"></div>
- </div>
-</div>
--->
-
-<!-- Modal Alarme de Suplementos -->
-<div class="alarm-modal-overlay" id="alarm-modal-overlay">
- <div class="alarm-modal">
-  <div class="alarm-modal-header">
-   <div class="alarm-modal-title">ALARME DE SUPLEMENTOS</div>
-   <button class="alarm-modal-close" id="alarm-modal-close" aria-label="Fechar">&#x2715;</button>
-  </div>
-  <!-- Gate PWA: exibido quando não está rodando como app instalado -->
-  <div id="alarm-pwa-gate" class="alarm-pwa-gate">
-   <div class="pwa-gate-icon">📱</div>
-   <div class="pwa-gate-badge">Necessário</div>
-   <div class="pwa-gate-title">Instale o App</div>
-   <div class="pwa-gate-desc">Os alarmes precisam que o Studio Focus esteja instalado como app no celular para disparar notificações de forma confiável.</div>
-   <button class="pwa-install-btn" id="pwa-install-btn" onclick="installAlarmPWA()">Instalar na tela inicial</button>
-   <div class="pwa-ios-steps" id="pwa-ios-steps" style="display:none">
-    <div class="pwa-ios-step"><div class="pwa-ios-step-num">1</div><span>Toque no botão <strong>Compartilhar</strong> (ícone &#x2B06; na barra inferior do Safari)</span></div>
-    <div class="pwa-ios-step"><div class="pwa-ios-step-num">2</div><span>Role e toque em <strong>"Adicionar à Tela de Início"</strong></span></div>
-    <div class="pwa-ios-step"><div class="pwa-ios-step-num">3</div><span>Confirme tocando em <strong>"Adicionar"</strong> no canto superior direito</span></div>
-   </div>
-   <p class="pwa-gate-note">Após instalar, abra pelo ícone na tela inicial e configure seus alarmes aqui.</p>
-  </div>
-  <!-- Config: exibido apenas quando está rodando como PWA instalada -->
-  <div id="alarm-config" class="alarm-body" style="display:none">
-   <div class="alarm-perm-banner" id="alarm-perm-banner">
-    <span>🔔</span>
-    <span>Permita notificações para receber os alarmes no celular.</span>
-    <button class="alarm-perm-btn" onclick="requestAlarmPermission()">Permitir</button>
-   </div>
-   <!-- Creatina -->
-   <div class="alarm-card alarm-card-creatina">
-    <div class="alarm-card-header">
-     <div class="alarm-card-icon">💪</div>
-     <div class="alarm-card-info">
-      <div class="alarm-card-name">Creatina</div>
-      <div class="alarm-card-desc">Lembrete diário para tomar creatina</div>
-     </div>
-     <label class="alarm-toggle">
-      <input type="checkbox" id="alarm-creatina-toggle" onchange="saveAlarms()">
-      <span class="alarm-toggle-slider"></span>
-     </label>
-    </div>
-    <div class="alarm-times" id="alarm-creatina-times"></div>
-    <div style="padding:0 16px 14px">
-     <button class="alarm-add-btn" onclick="addAlarmTime('creatina')">+ Adicionar horário</button>
-    </div>
-   </div>
-   <!-- Whey -->
-   <div class="alarm-card alarm-card-whey">
-    <div class="alarm-card-header">
-     <div class="alarm-card-icon">🥤</div>
-     <div class="alarm-card-info">
-      <div class="alarm-card-name">Whey Protein</div>
-      <div class="alarm-card-desc">Lembrete diário para tomar whey</div>
-     </div>
-     <label class="alarm-toggle">
-      <input type="checkbox" id="alarm-whey-toggle" onchange="saveAlarms()">
-      <span class="alarm-toggle-slider"></span>
-     </label>
-    </div>
-    <div class="alarm-times" id="alarm-whey-times"></div>
-    <div style="padding:0 16px 14px">
-     <button class="alarm-add-btn" onclick="addAlarmTime('whey')">+ Adicionar horário</button>
-    </div>
-   </div>
-   <!-- Status -->
-   <div class="alarm-status-bar">
-    <div class="alarm-status-dot off" id="alarm-status-dot"></div>
-    <span id="alarm-status-txt">Nenhum alarme ativo.</span>
-   </div>
-   <div class="alarm-push-status" id="alarm-push-status" style="display:none"></div>
-   <p style="font-size:10px;color:var(--mt);text-align:center;line-height:1.6;padding:0 8px 4px;font-style:italic">
-    🔔 Os alarmes funcionam mesmo com o app fechado e celular bloqueado via notificação push.
-   </p>
-  </div>
- </div>
-</div>
-
-<!--
-<div class="treino-modal-overlay" id="treino-modal-overlay">
- <div class="treino-modal">
-  <div class="treino-modal-header">
-   <div class="treino-modal-title">MONTE SEU TREINO</div>
-   <button class="treino-modal-close" id="treino-modal-close" aria-label="Fechar">&#x2715;</button>
-  </div>
-  <div class="treino-filter-row" id="treino-filters">
-   <button class="treino-filter-btn active" data-filter="todos">TODOS</button>
-   <button class="treino-filter-btn" data-filter="costas">COSTAS</button>
-   <button class="treino-filter-btn" data-filter="peito">PEITO</button>
-   <button class="treino-filter-btn" data-filter="pernas">PERNAS</button>
-   <button class="treino-filter-btn" data-filter="ombros">OMBROS</button>
-   <button class="treino-filter-btn" data-filter="biceps">BÍCEPS</button>
-   <button class="treino-filter-btn" data-filter="triceps">TRÍCEPS</button>
-   <button class="treino-filter-btn" data-filter="abs">ABS</button>
-  </div>
-  <div class="treino-cards" id="treino-cards">
-
-   <div class="ex-card" data-grupo="costas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(255,100,30,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BACK · LATS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-costas">COSTAS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Remada com Halteres</div>
-     <div class="ex-card-en">Dumbbell Bent-over Row</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–12</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="costas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(255,100,30,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BACK · LATS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-costas">COSTAS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Puxada na Polia</div>
-     <div class="ex-card-en">Lat Pulldown</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–15</span><span class="ex-card-equip">Polia</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="costas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(255,100,30,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BACK · RHOMBOIDS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-costas">COSTAS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Remada Unilateral</div>
-     <div class="ex-card-en">Single-arm Dumbbell Row</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Haltere</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="costas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(255,100,30,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BACK · TRAPS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-costas">COSTAS</span><span class="ex-badge badge-avanc">AVANÇADO</span></div>
-     <div class="ex-card-name">Levantamento Terra</div>
-     <div class="ex-card-en">Deadlift</div>
-     <div class="ex-card-meta"><span class="ex-card-series">4 × 5–8</span><span class="ex-card-equip">Barra</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="peito">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(239,68,68,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CHEST · PECS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-peito">PEITO</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Supino Reto com Halteres</div>
-     <div class="ex-card-en">Dumbbell Bench Press</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 8–12</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="peito">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(239,68,68,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CHEST · UPPER</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-peito">PEITO</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Supino Inclinado</div>
-     <div class="ex-card-en">Incline Dumbbell Press</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–12</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="peito">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(239,68,68,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CHEST · INNER</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-peito">PEITO</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Crossover na Polia</div>
-     <div class="ex-card-en">Cable Crossover</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Polia</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="peito">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(239,68,68,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CHEST · PECS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-peito">PEITO</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Flexão de Braço</div>
-     <div class="ex-card-en">Push-up</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 15–20</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="pernas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 2v10M8 6l4-4 4 4M7 22l5-10 5 10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(34,197,94,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">LEGS · QUADS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-pernas">PERNAS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Agachamento Livre</div>
-     <div class="ex-card-en">Barbell Back Squat</div>
-     <div class="ex-card-meta"><span class="ex-card-series">4 × 8–12</span><span class="ex-card-equip">Barra</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="pernas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 2v10M8 6l4-4 4 4M7 22l5-10 5 10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(34,197,94,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">LEGS · QUADS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-pernas">PERNAS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Leg Press 45°</div>
-     <div class="ex-card-en">Leg Press</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 12–15</span><span class="ex-card-equip">Máquina</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="pernas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 2v10M8 6l4-4 4 4M7 22l5-10 5 10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(34,197,94,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">LEGS · HAMSTRINGS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-pernas">PERNAS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Stiff com Halteres</div>
-     <div class="ex-card-en">Romanian Deadlift</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–12</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="pernas">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 2v10M8 6l4-4 4 4M7 22l5-10 5 10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(34,197,94,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">LEGS · GLUTES</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-pernas">PERNAS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Afundo com Halteres</div>
-     <div class="ex-card-en">Dumbbell Lunge</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12 cada</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="ombros">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7M4 19h16"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(168,85,247,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">SHOULDER · DELTS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-ombros">OMBROS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Desenvolvimento com Halteres</div>
-     <div class="ex-card-en">Dumbbell Shoulder Press</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–12</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="ombros">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7M4 19h16"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(168,85,247,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">SHOULDER · LATERAL</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-ombros">OMBROS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Elevação Lateral</div>
-     <div class="ex-card-en">Lateral Raise</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 12–15</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="ombros">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7M4 19h16"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(168,85,247,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">SHOULDER · FRONT</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-ombros">OMBROS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Elevação Frontal</div>
-     <div class="ex-card-en">Front Raise</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Haltere</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="ombros">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7M4 19h16"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(168,85,247,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">SHOULDER · REAR</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-ombros">OMBROS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Crucifixo Inverso</div>
-     <div class="ex-card-en">Reverse Fly</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="biceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M6 18c0-4 2-8 6-8s6 4 6 8M12 10V6M9 6h6"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(249,115,22,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BICEPS · BRACHII</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-biceps">BÍCEPS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Rosca Direta com Barra</div>
-     <div class="ex-card-en">Barbell Curl</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 10–12</span><span class="ex-card-equip">Barra</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="biceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M6 18c0-4 2-8 6-8s6 4 6 8M12 10V6M9 6h6"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(249,115,22,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BICEPS · PEAK</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-biceps">BÍCEPS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Rosca Alternada</div>
-     <div class="ex-card-en">Alternating Dumbbell Curl</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12 cada</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="biceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M6 18c0-4 2-8 6-8s6 4 6 8M12 10V6M9 6h6"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(249,115,22,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BICEPS · BRACHIALIS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-biceps">BÍCEPS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Rosca Martelo</div>
-     <div class="ex-card-en">Hammer Curl</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Halteres</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="biceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M6 18c0-4 2-8 6-8s6 4 6 8M12 10V6M9 6h6"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(249,115,22,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">BICEPS · ISOLATION</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-biceps">BÍCEPS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Rosca Scott</div>
-     <div class="ex-card-en">Preacher Curl</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 10–12</span><span class="ex-card-equip">Scott</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="triceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 6v12M8 10l4-4 4 4M7 18h10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(234,179,8,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">TRICEPS · LONG HEAD</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-triceps">TRÍCEPS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Tríceps Pulley</div>
-     <div class="ex-card-en">Tricep Pushdown</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3–4 × 12–15</span><span class="ex-card-equip">Polia</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="triceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 6v12M8 10l4-4 4 4M7 18h10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(234,179,8,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">TRICEPS · ALL HEADS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-triceps">TRÍCEPS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Tríceps Testa</div>
-     <div class="ex-card-en">Skull Crusher</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 10–12</span><span class="ex-card-equip">Barra EZ</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="triceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 6v12M8 10l4-4 4 4M7 18h10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(234,179,8,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">TRICEPS · DIPS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-triceps">TRÍCEPS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Mergulho no Banco</div>
-     <div class="ex-card-en">Bench Dips</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="triceps">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><path d="M12 6v12M8 10l4-4 4 4M7 18h10"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(234,179,8,.5) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">TRICEPS · OVERHEAD</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-triceps">TRÍCEPS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Extensão Overhead</div>
-     <div class="ex-card-en">Overhead Tricep Extension</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Haltere</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="abs">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="4" rx="1"/><rect x="8" y="10" width="8" height="4" rx="1"/><rect x="8" y="16" width="8" height="4" rx="1"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(20,184,166,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CORE · ABS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-abs">ABS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Abdominal Crunch</div>
-     <div class="ex-card-en">Crunch</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 20–25</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="abs">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="4" rx="1"/><rect x="8" y="10" width="8" height="4" rx="1"/><rect x="8" y="16" width="8" height="4" rx="1"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(20,184,166,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CORE · STABILITY</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-abs">ABS</span><span class="ex-badge badge-inic">INICIANTE</span></div>
-     <div class="ex-card-name">Prancha</div>
-     <div class="ex-card-en">Plank</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 30–60s</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="abs">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="4" rx="1"/><rect x="8" y="10" width="8" height="4" rx="1"/><rect x="8" y="16" width="8" height="4" rx="1"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(20,184,166,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CORE · OBLIQUES</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-abs">ABS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Russian Twist</div>
-     <div class="ex-card-en">Russian Twist</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 20 cada</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-   <div class="ex-card" data-grupo="abs">
-    <div class="ex-card-visual">
-     <svg class="ex-card-icon" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="4" rx="1"/><rect x="8" y="10" width="8" height="4" rx="1"/><rect x="8" y="16" width="8" height="4" rx="1"/></svg>
-     <div class="ex-muscle-glow" style="background:radial-gradient(circle,rgba(20,184,166,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-     <div class="ex-hud">CORE · LOWER ABS</div>
-    </div>
-    <div class="ex-card-body">
-     <div class="ex-card-badges"><span class="ex-badge badge-abs">ABS</span><span class="ex-badge badge-inter">INTERMEDIÁRIO</span></div>
-     <div class="ex-card-name">Elevação de Pernas</div>
-     <div class="ex-card-en">Hanging Leg Raise</div>
-     <div class="ex-card-meta"><span class="ex-card-series">3 × 12–15</span><span class="ex-card-equip">Peso corporal</span></div>
-    </div>
-   </div>
-
-  </div>
- </div>
-</div>
--->
-
 <!-- FOOTER -->
 <footer>
  <div class="footer-brand">STUDIO <b>FOCUS</b></div>
@@ -2396,7 +1659,7 @@ footer{
  <div class="tut-welcome-top">
  <div class="tut-welcome-icon"><svg style="width:48px;height:48px;stroke:var(--pu2);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M6 5v14M18 5v14M3 12h3M18 12h3M6 8h12M6 16h12"/></svg></div>
  <div class="tut-welcome-title">BEM-VINDO!</div>
- <div class="tut-welcome-sub">Studio Focus — Garça, SP</div>
+ <div class="tut-welcome-sub">Studio Focus - Garça, SP</div>
  </div>
  <div class="tut-welcome-body">
  <div class="tut-welcome-question">Quer ver um <strong style="color:var(--pu2)">tour rápido</strong> pelas ferramentas grátis da plataforma?</div>
@@ -2504,7 +1767,7 @@ function loadJSPDF() {
   return _jspdfPromise;
 }
 
-/* MODAIS — open/close */
+/* MODAIS - open/close */
 function openModal(id){
  const el=document.getElementById(id)
  if(el){el.classList.add('open');document.body.style.overflow='hidden';const inp=el.querySelector('input');if(inp)setTimeout(()=>inp.focus(),300)}
@@ -2529,223 +1792,6 @@ document.getElementById('macro-modal-close')?.addEventListener('click',()=>close
 document.getElementById('sim-modal-close')?.addEventListener('click',()=>closeModal('sim-modal-overlay'))
 document.getElementById('drawer-rm-btn')?.addEventListener('click',()=>{closeDrawer();openModal('rm-modal-overlay')})
 document.getElementById('rm-modal-close')?.addEventListener('click',()=>closeModal('rm-modal-overlay'))
-/*
-document.getElementById('drawer-treino-btn')?.addEventListener('click',()=>{closeDrawer();openModal('treino-modal-overlay')})
-document.getElementById('treino-modal-close')?.addEventListener('click',()=>closeModal('treino-modal-overlay'))
-// Treino filter tabs
-;(function(){
- var filtersEl=document.getElementById('treino-filters');
- var cardsEl=document.getElementById('treino-cards');
- if(!filtersEl||!cardsEl)return;
- filtersEl.addEventListener('click',function(e){
-  var btn=e.target.closest('.treino-filter-btn');
-  if(!btn)return;
-  filtersEl.querySelectorAll('.treino-filter-btn').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');
-  var filter=btn.dataset.filter;
-  var cards=cardsEl.querySelectorAll('.ex-card');
-  cards.forEach(function(card){
-   card.style.display=(filter==='todos'||card.dataset.grupo===filter)?'':'none';
-  });
-  var visible=[].filter.call(cards,function(c){return c.style.display!=='none'});
-  var empty=cardsEl.querySelector('.treino-empty');
-  if(visible.length===0){
-   if(!empty){var d=document.createElement('div');d.className='treino-empty';d.textContent='Nenhum exercício neste grupo ainda.';cardsEl.appendChild(d);}
-  }else{if(empty)empty.remove();}
- });
-})();
-*/
-
-
-/* ===== SISTEMA DE PLANEJAMENTO SEMANAL [COMENTADO] =====
-;(function(){
- var PLAN_KEY='sf-weekly-plan';
- var DIAS=['seg','ter','qua','qui','sex','sab'];
- var DIA_LABEL={seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta',sab:'Sábado'};
- var DIA_SHORT={seg:'SEG',ter:'TER',qua:'QUA',qui:'QUI',sex:'SEX',sab:'SAB'};
- var activeDaySelector=null;
-
- function loadPlan(){try{return JSON.parse(localStorage.getItem(PLAN_KEY))||{};}catch(e){return{};}}
- function savePlan(p){localStorage.setItem(PLAN_KEY,JSON.stringify(p));}
-
- function getCardId(card){return card.querySelector('.ex-card-name').textContent.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');}
- function getCardData(card){
-  return{
-   id:getCardId(card),
-   nome:card.querySelector('.ex-card-name').textContent.trim(),
-   en:card.querySelector('.ex-card-en').textContent.trim(),
-   grupo:card.dataset.grupo,
-   series:card.querySelector('.ex-card-series').textContent.trim(),
-   equip:card.querySelector('.ex-card-equip').textContent.trim()
-  };
- }
- function getDiasForId(id,plan){return DIAS.filter(function(d){return plan[d]&&plan[d].some(function(e){return e.id===id;});});}
-
- function updateCardIndicator(card,plan){
-  var id=getCardId(card);
-  var dias=getDiasForId(id,plan);
-  var old=card.querySelector('.ex-dia-indicator');
-  if(old)old.remove();
-  if(dias.length>0){
-   var ind=document.createElement('div');
-   ind.className='ex-dia-indicator';
-   ind.innerHTML=dias.map(function(d){return'<span class="ex-dia-pill">'+DIA_SHORT[d]+'</span>';}).join('');
-   var meta=card.querySelector('.ex-card-meta');
-   if(meta)meta.parentNode.insertBefore(ind,meta);
-  }
- }
-
- function closeDaySelector(){
-  if(activeDaySelector){activeDaySelector.remove();activeDaySelector=null;}
-  document.querySelectorAll('.ex-day-selector').forEach(function(el){el.remove();});
- }
-
- function showDaySelector(card,btn){
-  closeDaySelector();
-  var plan=loadPlan();
-  var data=getCardData(card);
-  var currentDias=getDiasForId(data.id,plan);
-
-  var sel=document.createElement('div');
-  sel.className='ex-day-selector';
-  sel.innerHTML='<div class="ex-day-selector-title">ADICIONAR AO DIA</div>'+
-   DIAS.map(function(d){
-    var on=currentDias.indexOf(d)>-1;
-    return'<button class="ex-day-btn'+(on?' active':'')+'" data-dia="'+d+'">'+DIA_LABEL[d]+(on?' ✓':'')+'</button>';
-   }).join('')+
-   '<button class="ex-day-cancel">Cancelar</button>';
-
-  // posicionar próximo ao card
-  var rect=card.getBoundingClientRect();
-  var top=rect.top+window.scrollY+rect.height/2-120;
-  var left=rect.left+window.scrollX+rect.width/2-95;
-  top=Math.max(8,Math.min(top,window.innerHeight+window.scrollY-310));
-  left=Math.max(8,Math.min(left,window.innerWidth-198));
-  sel.style.cssText='position:fixed;top:'+(rect.top+rect.height/2-120)+'px;left:'+(rect.left+rect.width/2-95)+'px;';
-  document.body.appendChild(sel);
-  activeDaySelector=sel;
-
-  sel.querySelectorAll('.ex-day-btn').forEach(function(dayBtn){
-   dayBtn.addEventListener('click',function(){
-    var dia=dayBtn.dataset.dia;
-    var plan=loadPlan();
-    var already=plan[dia]&&plan[dia].some(function(e){return e.id===data.id;});
-    if(already){
-     plan[dia]=plan[dia].filter(function(e){return e.id!==data.id;});
-    }else{
-     if(!plan[dia])plan[dia]=[];
-     plan[dia].push(data);
-    }
-    savePlan(plan);
-    updateCardIndicator(card,loadPlan());
-    closeDaySelector();
-   });
-  });
-  sel.querySelector('.ex-day-cancel').addEventListener('click',closeDaySelector);
-
-  setTimeout(function(){
-   function onOut(e){if(!sel.contains(e.target)&&e.target!==btn){closeDaySelector();document.removeEventListener('click',onOut);}}
-   document.addEventListener('click',onOut);
-  },120);
- }
-
- function initCards(){
-  var plan=loadPlan();
-  document.querySelectorAll('.ex-card').forEach(function(card){
-   if(!card.querySelector('.ex-add-btn')){
-    var btn=document.createElement('button');
-    btn.className='ex-add-btn';
-    btn.title='Adicionar ao plano semanal';
-    btn.textContent='+';
-    var vis=card.querySelector('.ex-card-visual');
-    if(vis)vis.appendChild(btn);
-    btn.addEventListener('click',function(e){e.stopPropagation();showDaySelector(card,btn);});
-   }
-   updateCardIndicator(card,plan);
-  });
- }
-
- // Abrir modal do treino → inicializar cards
- document.getElementById('drawer-treino-btn')?.addEventListener('click',function(){setTimeout(initCards,80);});
-
- // ESC fecha o seletor de dia
- document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDaySelector();});
-
- // ===== MODAL PLANO SEMANAL =====
- function renderWeeklyPlan(){
-  var plan=loadPlan();
-  var content=document.getElementById('plano-content');
-  if(!content)return;
-  var activeDia=content.dataset.activeDia||'seg';
-  var hasAny=DIAS.some(function(d){return plan[d]&&plan[d].length>0;});
-
-  if(!hasAny){
-   content.innerHTML='<div class="plano-empty"><svg style="width:48px;height:48px;stroke:var(--mt);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:12px" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'+
-    '<div style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--tx)">Nenhum exercício planejado ainda</div>'+
-    '<div style="font-size:12px;line-height:1.6">Abra <strong>Monte seu Treino</strong>, clique no <strong>+</strong> de cada exercício e escolha o dia da semana.</div></div>';
-   return;
-  }
-
-  var tabs='<div class="plano-tabs">'+DIAS.map(function(d){
-   var n=plan[d]?plan[d].length:0;
-   return'<button class="plano-tab'+(d===activeDia?' active':'')+'" data-dia="'+d+'">'+
-    DIA_SHORT[d]+(n>0?'<span class="plano-tab-badge">'+n+'</span>':'')+
-    '</button>';
-  }).join('')+'</div>';
-
-  var exs=plan[activeDia]||[];
-  var list=exs.length>0
-   ?exs.map(function(ex,i){
-    return'<div class="plano-ex-row">'+
-     '<div class="plano-ex-info">'+
-     '<span class="ex-badge badge-'+ex.grupo+'" style="flex-shrink:0">'+ex.grupo.toUpperCase()+'</span>'+
-     '<div><div class="plano-ex-nome">'+ex.nome+'</div>'+
-     '<div class="plano-ex-sub">'+ex.en+' &nbsp;·&nbsp; '+ex.series+'</div></div>'+
-     '</div>'+
-     '<button class="plano-ex-remove" data-dia="'+activeDia+'" data-idx="'+i+'">✕</button>'+
-     '</div>';
-   }).join('')
-   :'<div class="plano-dia-empty">Nenhum exercício para '+DIA_LABEL[activeDia]+'.<br><span style="font-size:12px">Clique no + nos cards de exercício.</span></div>';
-
-  var clearBtn=hasAny?'<button class="plano-clear-btn" id="plano-clear-all">Limpar todo o planejamento</button>':'';
-
-  content.innerHTML=tabs+'<div class="plano-ex-list">'+list+'</div>'+clearBtn;
-  content.dataset.activeDia=activeDia;
-
-  content.querySelectorAll('.plano-tab').forEach(function(tab){
-   tab.addEventListener('click',function(){content.dataset.activeDia=tab.dataset.dia;renderWeeklyPlan();});
-  });
-  content.querySelectorAll('.plano-ex-remove').forEach(function(btn){
-   btn.addEventListener('click',function(){
-    var dia=btn.dataset.dia;
-    var idx=parseInt(btn.dataset.idx);
-    var plan=loadPlan();
-    if(plan[dia])plan[dia].splice(idx,1);
-    savePlan(plan);
-    document.querySelectorAll('.ex-card').forEach(function(card){updateCardIndicator(card,loadPlan());});
-    renderWeeklyPlan();
-   });
-  });
-  var clearAll=document.getElementById('plano-clear-all');
-  if(clearAll)clearAll.addEventListener('click',function(){
-   savePlan({});
-   content.dataset.activeDia='seg';
-   document.querySelectorAll('.ex-card').forEach(function(card){updateCardIndicator(card,{});});
-   renderWeeklyPlan();
-  });
- }
-
- window.openWeeklyPlan=function(){
-  var content=document.getElementById('plano-content');
-  if(content)content.dataset.activeDia='seg';
-  renderWeeklyPlan();
-  openModal('plano-modal-overlay');
- };
-
- document.getElementById('plano-modal-close')?.addEventListener('click',function(){closeModal('plano-modal-overlay');});
-})();
-===== FIM SISTEMA DE PLANEJAMENTO SEMANAL [COMENTADO] ===== */
-
 // Input Validation
 document.addEventListener('input', function(e) {
   if (e.target && e.target.type === 'number') {
@@ -2758,7 +1804,7 @@ document.addEventListener('input', function(e) {
 // Click outside
 ;(function(){
  try{
- var _overlays=['imc-modal-overlay','cal-modal-overlay','agua-modal-overlay','macro-modal-overlay','sim-modal-overlay','rm-modal-overlay','alarm-modal-overlay','treino-modal-overlay','plano-modal-overlay','planos-modal-overlay'];
+ var _overlays=['imc-modal-overlay','cal-modal-overlay','agua-modal-overlay','macro-modal-overlay','sim-modal-overlay','rm-modal-overlay','alarm-modal-overlay','planos-modal-overlay'];
  _overlays.forEach(function(oid){
  try{
  var el=document.getElementById(oid);
@@ -2770,7 +1816,7 @@ document.addEventListener('input', function(e) {
  });
  }catch(err){}
 })();
-document.addEventListener('keydown',function(e){try{if(e.key==='Escape'){['imc-modal-overlay','cal-modal-overlay','agua-modal-overlay','macro-modal-overlay','sim-modal-overlay','rm-modal-overlay','alarm-modal-overlay','treino-modal-overlay','plano-modal-overlay','planos-modal-overlay'].forEach(function(id){try{closeModal(id)}catch(err){}});try{endTutorial()}catch(err){}}}catch(err){}})
+document.addEventListener('keydown',function(e){try{if(e.key==='Escape'){['imc-modal-overlay','cal-modal-overlay','agua-modal-overlay','macro-modal-overlay','sim-modal-overlay','rm-modal-overlay','alarm-modal-overlay','planos-modal-overlay'].forEach(function(id){try{closeModal(id)}catch(err){}});try{endTutorial()}catch(err){}}}catch(err){}})
 
 /* SEX TOGGLES */
 let modalSex='m', calSex='m'
@@ -2913,7 +1959,7 @@ function setupAgua(){
  const litros=(ml/1000).toFixed(1),copos=Math.round(ml/200)
  const manha=Math.round(ml*.35/50)*50,tarde=Math.round(ml*.40/50)*50,noite=ml-manha-tarde
  _lastAguaData={peso,ml,litros:parseFloat(litros),copos,manha,tarde,noite,ativ,clima,obj}
- const shareText=encodeURIComponent(`Minha meta de água: ${litros}L/dia \nStudio Focus — Garça SP\n(14) 98218-0923`)
+ const shareText=encodeURIComponent(`Minha meta de água: ${litros}L/dia \nStudio Focus - Garça SP\n(14) 98218-0923`)
  const res=document.getElementById('agua-result')
  res.style.borderColor='rgba(96,165,250,.35)';res.style.background='rgba(96,165,250,.06)'
  res.classList.remove('show');void res.offsetWidth;res.classList.add('show')
@@ -3067,7 +2113,7 @@ function calcSim(){
  return`<div class="sim-tl-item">
  <div class="sim-tl-dot">${emojis[i]}</div>
  <div class="sim-tl-content">
- <div class="sim-tl-week">Semana ${sem} — ${Math.round(pct*100)}%</div>
+ <div class="sim-tl-week">Semana ${sem} - ${Math.round(pct*100)}%</div>
  <div class="sim-tl-title">${obj==='perder'?'−'+kg+'kg':'+'+kg+'kg'}${pct===1?' ✓ Objetivo!':''}</div>
  <div class="sim-prog-bar"><div class="sim-prog-fill" style="width:${Math.round(pct*100)}%;background:${obj==='perder'?'#4ade80':'#60a5fa'}"></div></div>
  </div>
@@ -3078,7 +2124,7 @@ function calcSim(){
  res.classList.remove('show');void res.offsetWidth;res.classList.add('show')
  res.innerHTML=`
  <div class="sim-hero">
- <div class="sim-hero-sub">Calorias diárias — cenário moderado</div>
+ <div class="sim-hero-sub">Calorias diárias - cenário moderado</div>
  <div class="sim-hero-kcal">${kcalBase}<span style="font-size:16px;font-family:var(--fb);color:var(--mt);font-weight:300"> kcal</span></div>
  <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mt)">
  <span>TMB: <strong style="color:var(--tx)">${tmb}</strong></span>
@@ -3153,7 +2199,7 @@ function setup1RM(){
 }
 try{setup1RM()}catch(e){console.error("setup1RM error:",e)}
 
-/* PDF HELPERS — lightweight */
+/* PDF HELPERS - lightweight */
 function pdfDoc(){
  const{jsPDF}=window.jspdf
  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'})
@@ -3238,7 +2284,7 @@ async function generatePDF({peso,altura,imc,range:r,pesoIdeal:pi,tmb,sexo,idade}
   tx(9,false,[45,43,60]);const tipLines=wrap(r.tip,W-M*2-10);rect(M,y-3,W-M*2,tipLines.length*5+12,[238,235,255],3);doc.setFillColor(0,102,255);doc.rect(M,y-3,3,tipLines.length*5+12,'F');doc.text(tipLines,M+8,y+4);y+=tipLines.length*5+18
   pdfFooter(doc,W,M,H,tx,line)
 
-  /* Pagina 2 — Informacoes e orientacoes */
+  /* Pagina 2 - Informacoes e orientacoes */
   doc.addPage()
   bg([255,255,255])
   doc.setFillColor(0,102,255);doc.rect(0,0,W,2,'F')
@@ -3246,7 +2292,7 @@ async function generatePDF({peso,altura,imc,range:r,pesoIdeal:pi,tmb,sexo,idade}
   tx(9,true,[0,102,255]);doc.text('INFORMACOES E ORIENTACOES',M,p2);p2+=7
   line(p2,[210,205,220],.4);p2+=8
 
-  // Bloco 1 — O que e o IMC
+  // Bloco 1 - O que e o IMC
   
   let isPosIMC = (imc >= 18.5 && imc <= 24.9);
   let avTitleIMC = isPosIMC ? 'Peso Saudavel' : 'Atencao a saude';
@@ -3260,7 +2306,7 @@ async function generatePDF({peso,altura,imc,range:r,pesoIdeal:pi,tmb,sexo,idade}
   tx(9,true,[0,102,255]);doc.text('Formula:  IMC = peso (kg) / ( altura (m) x altura (m) )',W/2,p2+8,{align:'center'})
   p2+=19
 
-  // Bloco 2 — Faixas de classificacao
+  // Bloco 2 - Faixas de classificacao
   tx(10,true,[18,16,30]);doc.text('Faixas de classificacao (OMS)',M,p2);p2+=6
   const FAIXAS=[
    ['Abaixo do peso','< 18,5','Possivel risco nutricional'],
@@ -3283,20 +2329,20 @@ async function generatePDF({peso,altura,imc,range:r,pesoIdeal:pi,tmb,sexo,idade}
   })
   p2+=7
 
-  // Bloco 3 — Estimativa, nao diagnostico
+  // Bloco 3 - Estimativa, nao diagnostico
   tx(10,true,[18,16,30]);doc.text('Este resultado e uma estimativa',M,p2);p2+=6
   const discl=wrap('O IMC e uma ferramenta de triagem, nao um diagnostico medico. Ele nao considera fatores individuais como percentual de gordura corporal, massa muscular, distribuicao de gordura ou condicoes clinicas especificas. Atletas com alta massa muscular, idosos, gestantes e criancas podem obter resultados que nao refletem com precisao seu real estado de saude. Use este relatorio como ponto de partida, nao como conclusao.',W-M*2)
   tx(8.5,false,[60,55,75]);doc.text(discl,M,p2);p2+=discl.length*5+7
 
-  // Bloco 4 — Orientacao profissional
+  // Bloco 4 - Orientacao profissional
   tx(10,true,[18,16,30]);doc.text('Quando buscar orientacao profissional?',M,p2);p2+=6
-  const orient=wrap('Recomendamos consultar um medico, nutricionista ou educador fisico para uma avaliacao completa e personalizada — independentemente do resultado obtido. Um profissional podera analisar sua composicao corporal, historico de saude e objetivos individuais para oferecer orientacao adequada e segura.',W-M*2)
+  const orient=wrap('Recomendamos consultar um medico, nutricionista ou educador fisico para uma avaliacao completa e personalizada - independentemente do resultado obtido. Um profissional podera analisar sua composicao corporal, historico de saude e objetivos individuais para oferecer orientacao adequada e segura.',W-M*2)
   tx(8.5,false,[60,55,75]);doc.text(orient,M,p2);p2+=orient.length*5+8
 
   // Rodape informativo Studio Focus
   rect(M,p2,W-M*2,17,[235,242,255],3)
   doc.setFillColor(0,102,255);doc.rect(M,p2,2,17,'F')
-  tx(8.5,true,[0,102,255]);doc.text('Studio Focus — Academia em Garca, SP',M+6,p2+6)
+  tx(8.5,true,[0,102,255]);doc.text('Studio Focus - Academia em Garca, SP',M+6,p2+6)
   tx(8,false,[70,68,85]);doc.text('(14) 98218-0923  |  Seg-Sex: 06h-22h  |  Sab: 08h-12h',M+6,p2+13)
 
   pdfFooter(doc,W,M,H,tx,line)
@@ -3319,7 +2365,7 @@ async function gerarPDF1RM(rm, peso, reps){
 
   const{doc,W,H,M,bg,rect,line,tx,wrap}=pdfDoc()
   bg([255,255,255])
-  let y=pdfHeader(doc,W,M,tx,line,'Relatório de 1RM','Carga máxima e tabela de treino — Fórmula de Epley')
+  let y=pdfHeader(doc,W,M,tx,line,'Relatório de 1RM','Carga máxima e tabela de treino - Fórmula de Epley')
   
   rect(M,y,W-M*2,26,[235,245,255],4);doc.setFillColor(0,102,255);doc.rect(M,y,3,26,'F')
   tx(7,false,[0,102,255]);doc.text('CARGA MÁXIMA ESTIMADA (1RM)',M+8,y+8)
@@ -3714,7 +2760,7 @@ const TUT_STEPS=[
   pos:'right',keepDrawer:true},
  {targetId:'drawer-sim-btn',
   title:'Simulador de Metas',
-  desc:'Veja em quanto tempo você atinge seu objetivo em 3 cenários — perda de peso, ganho de massa ou manutenção.',
+  desc:'Veja em quanto tempo você atinge seu objetivo em 3 cenários - perda de peso, ganho de massa ou manutenção.',
   pos:'right',keepDrawer:true},
  {targetId:'drawer-rm-btn',
   title:'Calculadora de 1RM',
@@ -3731,7 +2777,7 @@ const TUT_STEPS=[
   pos:'right',keepDrawer:true},
  {targetId:'drawer-plano-btn',
   title:'Meu Treino Semanal',
-  desc:'Visualize seu treino organizado por dia da semana — segunda a sábado — pronto para seguir na academia.',
+  desc:'Visualize seu treino organizado por dia da semana - segunda a sábado - pronto para seguir na academia.',
   pos:'right',keepDrawer:true},
  */
  {targetId:'nav-planos-btn',
@@ -3776,7 +2822,7 @@ function renderTutStep(){
  const r=el.getBoundingClientRect(),PAD=8
  if(r.width===0&&r.height===0){setTimeout(()=>renderTutStep(),200);return}
  const sp=document.getElementById('tut-spotlight')
- // overlay é position:fixed;inset:0 — coordenadas já são relativas ao viewport, sem scrollY
+ // overlay é position:fixed;inset:0 - coordenadas já são relativas ao viewport, sem scrollY
  sp.style.top=(r.top-PAD)+'px';sp.style.left=(r.left-PAD)+'px'
  sp.style.width=(r.width+PAD*2)+'px';sp.style.height=(r.height+PAD*2)+'px'
  const card=document.getElementById('tut-card'),cardW=270,vw=window.innerWidth,vh=window.innerHeight
@@ -4143,7 +3189,7 @@ document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.
             type: 'SHOW_NOTIFICATION', title: title, body: body, tag: tag
           });
         } else {
-          new Notification(title, { body: body, tag: tag, icon: './icon-192.png' });
+          new Notification(title, { body: body, tag: tag, icon: './img/icon-192.png' });
         }
       } catch(e) {
         try { new Notification(title, { body: body }); } catch(e2) {}
@@ -4215,6 +3261,9 @@ document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.
     el.innerHTML = '<span style="font-size:14px;flex-shrink:0">' + (icons[state]||'') + '</span><span>' + msg + '</span>';
   }
 
+  // URL do Cloudflare Worker de alarmes (deploy: workers/wrangler-alarms.toml)
+  var ALARMS_WORKER_URL = 'https://studio-focus-alarms.the130programacion.workers.dev';
+
   var _pushSyncRetries = 0;
   async function syncPushSubscription() {
     if (!window.OneSignal) {
@@ -4227,40 +3276,50 @@ document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.
       return;
     }
 
-    var alarms = buildAlarmList();
-    if (!alarms.length) {
-      updatePushStatus('off', 'Nenhum alarme ativo.');
-      // Remove tags antigas se não houver alarmes
-      OneSignal.push(function() {
-        var currentTags = OneSignal.User.getTags();
-        var toRemove = Object.keys(currentTags).filter(t => t.startsWith('alarm_'));
-        if (toRemove.length) OneSignal.User.removeTags(toRemove);
-      });
+    // Obtém o ID do usuário no OneSignal (necessário para o Worker enviar push)
+    var onesignalId = null;
+    try {
+      onesignalId = await OneSignal.User.getOnesignalId();
+    } catch(e) {}
+    if (!onesignalId) {
+      try { onesignalId = OneSignal.User.PushSubscription?.id; } catch(e) {}
+    }
+
+    if (!onesignalId) {
+      updatePushStatus('off', 'Aguardando registro do OneSignal...');
+      setTimeout(function() { _pushSyncRetries < 5 && syncPushSubscription(); _pushSyncRetries++; }, 3000);
       return;
     }
 
-    updatePushStatus('syncing', 'Sincronizando com OneSignal...');
+    var alarms = buildAlarmList();
+    if (!alarms.length) {
+      updatePushStatus('off', 'Nenhum alarme ativo.');
+      // Remove assinatura do worker ao desativar todos os alarmes
+      fetch(ALARMS_WORKER_URL + '/subscribe', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onesignalId: onesignalId }),
+      }).catch(function(){});
+      return;
+    }
+
+    updatePushStatus('syncing', 'Sincronizando alarmes...');
 
     try {
-      OneSignal.push(function() {
-        // Converte horários em tags para o OneSignal (ex: alarm_0800: "1")
-        var tags = {};
-        alarms.forEach(function(a) {
-          var tagKey = 'alarm_' + a.time.replace(':', '');
-          tags[tagKey] = "1";
-        });
-
-        // Limpa e define as novas tags usando a API v16 (OneSignal.User)
-        var currentTags = OneSignal.User.getTags();
-        var toRemove = Object.keys(currentTags).filter(t => t.startsWith('alarm_') && !tags[t]);
-        if (toRemove.length) OneSignal.User.removeTags(toRemove);
-        
-        OneSignal.User.addTags(tags);
-        updatePushStatus('ok', alarms.length + ' alarme(s) sincronizado(s) via OneSignal!');
+      var resp = await fetch(ALARMS_WORKER_URL + '/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onesignalId: onesignalId, alarms: alarms }),
       });
+
+      if (resp.ok) {
+        updatePushStatus('ok', alarms.length + ' alarme(s) ativo(s) - push garantido!');
+      } else {
+        throw new Error('HTTP ' + resp.status);
+      }
     } catch(e) {
-      console.warn('[Alarm] OneSignal sync erro:', e);
-      updatePushStatus('error', 'Erro ao sincronizar com OneSignal.');
+      console.warn('[Alarm] Worker sync erro:', e);
+      updatePushStatus('error', 'Erro ao sincronizar alarmes. Verifique a conexão.');
     }
   }
 
@@ -4289,6 +3348,6 @@ document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.
   setTimeout(checkAlarms, 2000);
 })();
 </script>
-<script src="chat-widget.js"></script>
+
 </body>
 </html>

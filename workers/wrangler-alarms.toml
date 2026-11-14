@@ -1,0 +1,33 @@
+name            = "studio-focus-alarms"
+main            = "alarms.js"
+compatibility_date = "2026-01-01"
+
+# Cron: verifica alarmes todo minuto
+[triggers]
+crons = ["* * * * *"]
+
+# KV namespace — criar com: wrangler kv namespace create ALARMS_KV
+# Copiar o "id" retornado e colocar abaixo
+[[kv_namespaces]]
+binding = "ALARMS_KV"
+id      = "ebd48acf1c774b6e818a71fd791545b4"
+
+[vars]
+# Origens que podem registrar alarmes (separadas por vírgula)
+ALLOWED_ORIGINS = "https://www.studiofocus.app.br,https://studiofocus.app.br"
+
+# Rate limit por IP: 20 sincronizações por minuto
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1002"
+
+  [ratelimits.simple]
+  limit = 20
+  period = 60
+
+[observability]
+enabled = true
+
+# Secrets:
+# wrangler secret put ONESIGNAL_APP_ID      --config workers/wrangler-alarms.toml
+# wrangler secret put ONESIGNAL_REST_API_KEY --config workers/wrangler-alarms.toml

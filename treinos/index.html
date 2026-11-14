@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Área do Aluno · Studio Focus</title>
+    <link rel="icon" href="../img/image.png">
+    <link rel="apple-touch-icon" href="../img/image.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SF Treinos">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- OneSignal Push -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "215ca90b-5f40-4721-b192-975001757f51",
+          serviceWorkerPath: "/treinos/sw.js",
+          serviceWorkerParam: { scope: "/treinos/" },
+        });
+        window.OneSignal = OneSignal;
+      });
+    </script>
+    <script>(function(){
+        var t=localStorage.getItem('sf-theme')||'light';
+        document.documentElement.setAttribute('data-theme',t);
+        // Esconde login instantaneamente se há sessão salva (evita flash)
+        if(localStorage.getItem('sf-aluno-session')) document.documentElement.classList.add('sf-has-session');
+    })();</script>
+    <style>html.sf-has-session #login-screen{display:none!important}</style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        s1: '#0b0f19',
+                        s2: '#121824',
+                        s3: '#1a2234',
+                        pu: '#8b5cf6',
+                        pu2: '#a78bfa',
+                        bd: '#222f47',
+                        mt: '#94a3b8',
+                    },
+                    fontFamily: {
+                        bebas: ['"Bebas Neue"', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body {
+            overscroll-behavior: none;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(18, 24, 36, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(34, 47, 71, 0.6);
+        }
+        .glow-btn:hover {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+        .checkbox-custom:checked + label svg {
+            transform: scale(1.1);
+            stroke: #10b981;
+        }
+        .checkbox-custom:checked + label {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .checkbox-custom:checked ~ div .ex-title {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .bg-glow {
+            animation: pulse-glow 8s ease-in-out infinite;
+        }
+
+        /* Keyframe Animations for Exercise Illustrations */
+        @keyframes barbell-press {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(12px); }
+        }
+        @keyframes bar-pulldown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(16px); }
+        }
+        @keyframes squat-glide {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(10px) scaleY(0.9); }
+        }
+        @keyframes bicep-flex {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-35deg); }
+        }
+        @keyframes shoulder-fly {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(15deg); }
+        }
+        @keyframes cardio-pulse {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.6; }
+            50% { stroke-dashoffset: 20; opacity: 1; }
+        }
+        @keyframes core-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0.7; }
+        }
+        @keyframes generic-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== LIGHT THEME ===== */
+        html[data-theme="light"] body {
+            background-color: #f0f4f8;
+            color: #0f172a;
+        }
+        html[data-theme="light"] .glass {
+            background: rgba(255, 255, 255, 0.88) !important;
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+        html[data-theme="light"] .bg-s1 { background-color: #f8fafc !important; }
+        html[data-theme="light"] .bg-s2 { background-color: #ffffff !important; }
+        html[data-theme="light"] .bg-s3 { background-color: #eef2f9 !important; }
+        html[data-theme="light"] .bg-s3\/50 { background-color: rgba(200, 215, 235, 0.6) !important; }
+        html[data-theme="light"] .bg-s3\/60 { background-color: rgba(200, 215, 235, 0.7) !important; }
+        html[data-theme="light"] .bg-s3\/30 { background-color: rgba(200, 215, 235, 0.4) !important; }
+        html[data-theme="light"] .text-mt { color: #4e627e !important; }
+        html[data-theme="light"] .border-bd { border-color: rgba(15, 23, 42, 0.12) !important; }
+        html[data-theme="light"] .border-bd\/40 { border-color: rgba(15, 23, 42, 0.1) !important; }
+        html[data-theme="light"] .border-bd\/20 { border-color: rgba(15, 23, 42, 0.08) !important; }
+        html[data-theme="light"] h2,
+        html[data-theme="light"] h3,
+        html[data-theme="light"] h4 { color: #0f172a !important; }
+        html[data-theme="light"] .ex-title { color: #0f172a !important; }
+        html[data-theme="light"] input,
+        html[data-theme="light"] select { color: #0f172a !important; }
+        html[data-theme="light"] #modal-nome { color: #0f172a !important; }
+        html[data-theme="light"] .dia-tab { background-color: #ffffff !important; border-color: rgba(15,23,42,0.12) !important; }
+        html[data-theme="light"] .dia-tab.bg-pu { background-color: #8b5cf6 !important; color: white !important; }
+        .exercise-card { background: var(--s2); }
+        html[data-theme="light"] .exercise-card { background: #ffffff !important; box-shadow: 0 1px 4px rgba(15,23,42,0.08); }
+        html[data-theme="light"] #modal-exercicio .glass { background: #ffffff !important; }
+        html[data-theme="light"] #modal-animacao-container { background: var(--s3) !important; }
+        html[data-theme="light"] #modal-carga { color: #059669 !important; }
+        html[data-theme="light"] .modal-info-card { background: var(--s3) !important; border-color: var(--bd) !important; }
+        html[data-theme="light"] #obs-treino-dia { background-color: rgba(200,215,235,0.5) !important; color: #0f172a !important; }
+        html[data-theme="light"] .dif-btn { background-color: rgba(220,230,245,0.5) !important; }
+        html[data-theme="light"] .feedback-card { background: rgba(255,255,255,0.88) !important; border-color: rgba(15,23,42,0.12) !important; }
+        /* Corrige text-white em fundos de tema variável (bg-s1/s2/s3) */
+        html[data-theme="light"] p.text-white,
+        html[data-theme="light"] label.text-white,
+        html[data-theme="light"] span.text-white:not([class*="bg-"]),
+        html[data-theme="light"] a.text-white:not([class*="bg-"]),
+        html[data-theme="light"] div.text-white:not([class*="bg-"]) { color: #0f172a !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-pu selection:text-white">
+
+    <!-- BLOQUEIO DESKTOP -->
+    <div id="desktop-block" style="display:none;position:fixed;inset:0;z-index:9999;background:#f4f6fb;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;">
+        <!-- Faixa superior decorativa -->
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#7c3aed,#a78bfa,#7c3aed);"></div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;max-width:500px;width:100%;">
+            <!-- Logo -->
+            <img src="../img/image.png" alt="Studio Focus" style="width:180px;height:180px;object-fit:contain;border-radius:32px;margin-bottom:2.5rem;box-shadow:0 8px 40px rgba(124,58,237,0.18);">
+
+            <!-- Card -->
+            <div style="background:#ffffff;border-radius:24px;padding:3rem 3.5rem;width:100%;box-shadow:0 4px 40px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+                <!-- Ícone mobile -->
+                <div style="width:64px;height:64px;background:#f3effe;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.8rem;">📱</div>
+
+                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#1e1b4b;letter-spacing:0.04em;margin-bottom:0.75rem;">Acesso exclusivo pelo celular</h2>
+
+                <div style="width:48px;height:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;margin:0 auto 1.5rem;"></div>
+
+                <p style="font-family:'Outfit',sans-serif;font-size:1rem;color:#4b5563;line-height:1.8;margin-bottom:2rem;">
+                    Esta área foi desenvolvida exclusivamente para dispositivos móveis.<br>
+                    Por favor, acesse pelo seu <strong style="color:#7c3aed;">smartphone</strong> para continuar.
+                </p>
+
+                <div style="background:#f3effe;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
+                    <span style="font-size:1.2rem;">💬</span>
+                    <p style="font-family:'Outfit',sans-serif;font-size:0.9rem;color:#6b7280;margin:0;text-align:left;">Ficou com dúvidas? Nossa equipe está à disposição para te ajudar.</p>
+                </div>
+            </div>
+
+            <!-- Rodapé -->
+            <p style="font-family:'Outfit',sans-serif;font-size:0.8rem;color:#9ca3af;margin-top:2rem;">© Studio Focus · Todos os direitos reservados</p>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua.toLowerCase());
+        var isNarrow = window.screen.width <= 768;
+        if (!isMobile && !isNarrow) {
+            var el = document.getElementById('desktop-block');
+            el.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    })();
+    </script>
+
+    <!-- Efeitos de Fundo Decorativos -->
+    <div class="fixed top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-pu/10 blur-[120px] bg-glow pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-emerald-500/5 blur-[120px] bg-glow pointer-events-none z-0"></div>
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="flex-1 flex items-center justify-center p-4 relative z-10" style="min-height:100dvh">
+        <div class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <!-- Linha decorativa no topo -->
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pu to-indigo-500"></div>
+
+            <div class="text-center mb-8">
+                <img src="../img/image.png" alt="Studio Focus Logo" class="h-12 object-contain mx-auto">
+                <p class="text-xs font-bold uppercase tracking-widest text-mt mt-1">Área do Aluno · Treinos</p>
+            </div>
+
+            <form id="login-form" class="space-y-6" onsubmit="handleLogin(event)">
+                <div class="space-y-2">
+                    <label for="username" class="text-xs uppercase font-bold tracking-wider text-mt">Usuário</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-mt">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </span>
+                        <input type="text" id="username" required autocomplete="username"
+                               autocorrect="off" autocapitalize="none" spellcheck="false"
+                               class="w-full bg-s3/50 border border-bd rounded-xl py-3 pl-11 pr-4 text-white placeholder-mt/50 focus:outline-none focus:border-pu focus:ring-1 focus:ring-pu transition-all text-sm"
+                               placeholder="Ex: focus.joao.123">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="password" class="text-xs uppercase font-bold tracking-wider text-mt">Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-mt">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </span>
+                        <input type="password" id="password" required autocomplete="current-password"
+                               autocorrect="off" autocapitalize="none" spellcheck="false"
+                               class="w-full bg-s3/50 border border-bd rounded-xl py-3 pl-11 pr-10 text-white placeholder-mt/50 focus:outline-none focus:border-pu focus:ring-1 focus:ring-pu transition-all text-sm"
+                               placeholder="******">
+                        <button type="button" onclick="toggleVer('password', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs font-medium">
+                    <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                    <span id="login-error-txt">Usuário ou senha incorretos.</span>
+                </div>
+
+                <button type="submit" id="btn-login"
+                        class="w-full bg-pu hover:bg-pu2 text-white font-bold py-3.5 px-4 rounded-xl transition-all glow-btn flex items-center justify-center gap-2 text-sm">
+                    <span>Acessar Treino</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <div class="mt-5 text-center">
+                <button onclick="abrirRedefinirSenha()" class="text-xs text-mt hover:text-pu2 transition-colors underline underline-offset-2">
+                    Esqueci minha senha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA DE REDEFINIÇÃO DE SENHA -->
+    <div id="reset-screen" class="hidden flex-1 items-center justify-center p-4 relative z-10">
+        <div class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pu to-indigo-500"></div>
+
+            <div class="text-center mb-6">
+                <img src="../img/image.png" alt="Studio Focus Logo" class="h-10 object-contain mx-auto">
+                <p class="text-xs font-bold uppercase tracking-widest text-mt mt-1">Redefinir Senha</p>
+            </div>
+
+            <!-- Redefinição feita pelo personal: ele envia um novo link de acesso (uso único) -->
+            <div class="space-y-5">
+                <div class="flex items-start gap-3 bg-pu/10 border border-pu/20 rounded-xl p-4">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-pu2 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-sm text-mt">Por segurança, a senha é redefinida pelo seu personal. Peça pelo WhatsApp e você recebe um link para criar uma nova senha.</p>
+                </div>
+                <a href="https://wa.me/5514982180923?text=Oi!%20Esqueci%20minha%20senha%20do%20app%20de%20treinos.%20Pode%20me%20enviar%20um%20novo%20link%20de%20acesso%3F"
+                   target="_blank" rel="noopener"
+                   class="w-full bg-pu hover:bg-pu2 text-white font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>Pedir novo link pelo WhatsApp</span>
+                </a>
+            </div>
+
+            <div class="mt-5 text-center">
+                <button onclick="voltarParaLogin()" class="text-xs text-mt hover:text-pu2 transition-colors underline underline-offset-2">
+                    Voltar ao login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PORTAL DO TREINO (OCULTO POR PADRÃO) -->
+    <div id="portal-screen" class="hidden flex-col relative z-10 w-full" style="height:100dvh;overflow:hidden">
+
+        <!-- ═══ CONTEÚDO SCROLLÁVEL ═══ -->
+        <div class="flex-1 overflow-y-auto pb-24" id="app-scroll">
+
+            <!-- ══════════ ABA 1: TREINO ══════════ -->
+            <section id="app-treino" class="app-panel">
+                <!-- Header roxo -->
+                <div class="px-5 pt-10 pb-5 rounded-b-3xl" style="background:linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%)">
+                    <p class="text-white/70 text-xs font-semibold">Bons treinos 💪</p>
+                    <h2 id="aluno-nome" class="text-white font-bold text-xl leading-tight">Carregando...</h2>
+                    <p id="treino-subtitulo" class="text-white/60 text-xs mt-0.5"></p>
+                    <!-- Stats -->
+                    <div class="flex gap-2 mt-4">
+                        <div class="flex-1 bg-white/15 rounded-xl py-2.5 text-center">
+                            <p id="stat-hoje" class="text-white font-bold text-lg leading-none">0</p>
+                            <p class="text-white/60 text-[10px] font-semibold mt-1">Hoje</p>
+                        </div>
+                        <div class="flex-1 bg-white/15 rounded-xl py-2.5 text-center">
+                            <p id="stat-mes" class="text-white font-bold text-lg leading-none">0</p>
+                            <p class="text-white/60 text-[10px] font-semibold mt-1">Este mês</p>
+                        </div>
+                        <div class="flex-1 bg-white/15 rounded-xl py-2.5 text-center">
+                            <p id="stat-total" class="text-white font-bold text-lg leading-none">0</p>
+                            <p class="text-white/60 text-[10px] font-semibold mt-1">Total</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendário semanal -->
+                <div class="px-5 mt-5">
+                    <div id="calendario-semanal" class="flex justify-between items-center"></div>
+                    <div id="calendario-dots" class="flex justify-between mt-2 px-1"></div>
+                </div>
+
+                <!-- Exercícios de hoje -->
+                <div class="px-5 mt-5">
+                    <p id="label-exercicios-dia" class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Exercícios de hoje</p>
+                    <div id="exercicios-lista" class="flex flex-col gap-3"></div>
+                    <!-- Estado Vazio -->
+                    <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-12 px-4 bg-s2 rounded-2xl border border-bd">
+                        <i data-lucide="calendar" class="w-10 h-10 text-mt/30 mb-3"></i>
+                        <h3 class="font-bold text-base text-white mb-1">Dia de Descanso!</h3>
+                        <p class="text-xs text-mt max-w-xs">Nenhum exercício programado. Aproveite para recuperar!</p>
+                    </div>
+                </div>
+
+                <!-- Botão Melhorar este app -->
+<!-- Progresso do treino -->
+                <div id="progress-ring-container" class="hidden px-5 mt-5 mb-4">
+                    <div class="bg-s2 rounded-2xl border border-bd p-5 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-bold text-white">Progresso do treino</p>
+                            <p class="text-[10px] text-mt mt-0.5">Conclua os exercícios</p>
+                            <p id="progress-pct-label" class="text-2xl font-bold text-white mt-1">0%</p>
+                        </div>
+                        <svg width="64" height="64" viewBox="0 0 64 64" class="flex-shrink-0">
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="#1a2234" stroke-width="5"/>
+                            <circle id="progress-ring" cx="32" cy="32" r="28" fill="none" stroke="#8b5cf6" stroke-width="5"
+                                    stroke-linecap="round" stroke-dasharray="175.93" stroke-dashoffset="175.93"
+                                    transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 0.6s ease"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Feedback do Dia -->
+                <div id="feedback-dia-container" class="hidden px-5 mt-1 mb-6">
+                    <div class="bg-s2 rounded-2xl border border-bd p-5">
+                        <h4 class="font-bold text-sm text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-pu2"></i>
+                            Feedback do Treino
+                        </h4>
+                        <div class="mb-4">
+                            <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Como foi a dificuldade?</p>
+                            <div class="flex gap-1.5" id="dificuldade-btns">
+                                <button onclick="selecionarDificuldade(1)" data-nivel="1" class="dif-btn flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border border-bd bg-s3/30 transition-all">
+                                    <i data-lucide="smile" class="w-4 h-4 text-emerald-400"></i>
+                                    <span class="text-[8px] font-bold text-mt leading-tight">Fácil</span>
+                                </button>
+                                <button onclick="selecionarDificuldade(2)" data-nivel="2" class="dif-btn flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border border-bd bg-s3/30 transition-all">
+                                    <i data-lucide="thumbs-up" class="w-4 h-4 text-lime-400"></i>
+                                    <span class="text-[8px] font-bold text-mt leading-tight">Ok</span>
+                                </button>
+                                <button onclick="selecionarDificuldade(3)" data-nivel="3" class="dif-btn flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border border-bd bg-s3/30 transition-all">
+                                    <i data-lucide="activity" class="w-4 h-4 text-yellow-400"></i>
+                                    <span class="text-[8px] font-bold text-mt leading-tight">Mod.</span>
+                                </button>
+                                <button onclick="selecionarDificuldade(4)" data-nivel="4" class="dif-btn flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border border-bd bg-s3/30 transition-all">
+                                    <i data-lucide="flame" class="w-4 h-4 text-orange-400"></i>
+                                    <span class="text-[8px] font-bold text-mt leading-tight">Hard</span>
+                                </button>
+                                <button onclick="selecionarDificuldade(5)" data-nivel="5" class="dif-btn flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border border-bd bg-s3/30 transition-all">
+                                    <i data-lucide="zap" class="w-4 h-4 text-red-400"></i>
+                                    <span class="text-[8px] font-bold text-mt leading-tight">Max</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-2">Observações</p>
+                            <textarea id="obs-treino-dia" rows="2" oninput="autoSaveFeedback()"
+                                placeholder="Anote como foi o treino..."
+                                class="w-full bg-s3/50 border border-bd rounded-xl py-2.5 px-3 text-white placeholder-mt/40 focus:outline-none focus:border-pu text-xs resize-none"></textarea>
+                        </div>
+                        <div id="feedback-salvo-badge" class="hidden mt-2 flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i><span>Salvo</span>
+                        </div>
+                        <button onclick="enviarFeedbackWhatsApp()" class="mt-4 w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-3 rounded-xl transition-all">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            Enviar feedback para academia
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ══════════ ABA 3: PERFIL ══════════ -->
+            <section id="app-perfil" class="app-panel hidden">
+                <div class="px-5 pt-10 pb-5 rounded-b-3xl flex items-center gap-4" style="background:linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%)">
+                    <div id="perfil-avatar" class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 bg-white/10 flex items-center justify-center">
+                        <img src="../img/image.png" alt="Studio Focus" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h2 id="perfil-nome" class="text-white font-bold text-lg leading-tight">Aluno</h2>
+                        <p class="text-white/60 text-xs mt-0.5">Studio Focus · Aluno</p>
+                    </div>
+                </div>
+                <div class="px-5 mt-5">
+                    <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Ferramentas</p>
+                    <div class="bg-s2 rounded-2xl border border-bd overflow-hidden divide-y divide-bd/40">
+                        <button onclick="abrirAlarmes()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium"><i data-lucide="bell" class="w-4 h-4 text-pu2"></i>Alarme de Suplementos</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-mt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-5 mt-5">
+                    <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Conta</p>
+                    <div class="bg-s2 rounded-2xl border border-bd overflow-hidden divide-y divide-bd/40">
+                        <button onclick="abrirModalAvaliacaoAluno()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium"><i data-lucide="clipboard-list" class="w-4 h-4 text-pu2"></i>Minha avaliação</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-mt"></i>
+                        </button>
+                        <button onclick="abrirModalTrocarSenha()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium"><i data-lucide="lock" class="w-4 h-4 text-pu2"></i>Trocar senha</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-mt"></i>
+                        </button>
+<button onclick="toggleTheme()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium">
+                                <i id="theme-icon-treino" data-lucide="sun" class="w-4 h-4 text-pu2"></i>
+                                Tema do app
+                            </span>
+                            <div id="theme-toggle-track" class="relative w-11 h-6 rounded-full transition-colors duration-300 flex items-center px-0.5" style="background:#8b5cf6">
+                                <div id="theme-toggle-thumb" class="w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 flex items-center justify-center translate-x-5">
+                                    <i id="theme-toggle-icon" data-lucide="sun" class="w-3 h-3" style="color:#8b5cf6"></i>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-5 mt-5">
+                    <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Suporte</p>
+                    <div class="bg-s2 rounded-2xl border border-bd overflow-hidden divide-y divide-bd/40">
+                        <button onclick="verificarAtualizacaoApp()" id="btn-atualizar-app" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium">
+                                <i data-lucide="refresh-cw" id="icone-atualizar" class="w-4 h-4 text-pu2"></i>
+                                Atualizar app
+                            </span>
+                            <span id="badge-atualizacao" class="hidden w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </button>
+                        <a href="https://wa.me/5514982180923?text=Oi!%20Preciso%20de%20ajuda." target="_blank" class="w-full flex items-center justify-between px-4 py-3.5">
+                            <span class="flex items-center gap-3 text-sm text-white font-medium"><i data-lucide="help-circle" class="w-4 h-4 text-pu2"></i>Ajuda</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-mt"></i>
+                        </a>
+                        <button onclick="showLogoutConfirm()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                            <span class="flex items-center gap-3 text-sm text-red-400 font-medium"><i data-lucide="log-out" class="w-4 h-4 text-red-400"></i>Sair</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /app-scroll -->
+
+        <!-- ═══ BOTTOM NAVIGATION ═══ -->
+        <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center py-2.5 border-t border-bd/50" style="background:#121824">
+            <button onclick="mudarAbaApp('treino')" id="nav-treino" class="nav-item flex flex-col items-center gap-0.5 px-4 py-1 text-pu2">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[10px] font-bold">Treino</span>
+            </button>
+            <button onclick="mudarAbaApp('perfil')" id="nav-perfil" class="nav-item flex flex-col items-center gap-0.5 px-4 py-1 text-mt">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[10px] font-bold">Perfil</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- Modal Alarme de Suplementos -->
+    <div id="modal-alarmes" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden items-center justify-center p-4" onclick="if(event.target===this)fecharAlarmes()">
+        <div class="glass max-w-sm w-full rounded-3xl overflow-hidden shadow-2xl max-h-[88vh] flex flex-col" onclick="event.stopPropagation()">
+            <div class="h-1 bg-gradient-to-r from-pu to-indigo-500 flex-shrink-0"></div>
+            <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-bd/40 flex-shrink-0">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i data-lucide="bell" class="w-5 h-5 text-pu2"></i>Alarme de Suplementos
+                </h3>
+                <button onclick="fecharAlarmes()" class="w-8 h-8 rounded-xl bg-s3 hover:bg-s2 border border-bd text-mt hover:text-white transition-all flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <!-- Config -->
+            <div id="alarme-config" class="flex flex-col overflow-y-auto p-5 gap-4">
+                <!-- Banner permissão -->
+                <div id="alarme-perm-banner" class="flex items-center gap-2.5 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-xs text-white">
+                    <span>🔔</span><span class="flex-1">Permita notificações para receber os alarmes.</span>
+                    <button onclick="alarmePermitir()" class="bg-pu text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex-shrink-0">Permitir</button>
+                </div>
+                <!-- Creatina -->
+                <div class="bg-s2 rounded-2xl border border-bd overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3 border-b border-bd/40">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center text-lg flex-shrink-0">💪</div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-white">Creatina</p>
+                            <p class="text-[11px] text-mt">Lembrete diário</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="alarme-creatina-toggle" onchange="alarmesSalvar()" class="sr-only peer">
+                            <div class="w-10 h-5 bg-bd rounded-full peer peer-checked:bg-pu transition-colors"></div>
+                            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+                    <div id="alarme-creatina-times" class="px-4 py-2 space-y-2 text-xs text-mt/60 italic">Nenhum horário</div>
+                    <div class="px-4 pb-3">
+                        <button onclick="alarmeAddTime('creatina')" class="text-pu2 text-xs font-bold flex items-center gap-1.5 hover:text-white transition-colors">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>Adicionar horário
+                        </button>
+                    </div>
+                </div>
+                <!-- Whey -->
+                <div class="bg-s2 rounded-2xl border border-bd overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3 border-b border-bd/40">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-lg flex-shrink-0">🥤</div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-white">Whey Protein</p>
+                            <p class="text-[11px] text-mt">Lembrete diário</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="alarme-whey-toggle" onchange="alarmesSalvar()" class="sr-only peer">
+                            <div class="w-10 h-5 bg-bd rounded-full peer peer-checked:bg-pu transition-colors"></div>
+                            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+                    <div id="alarme-whey-times" class="px-4 py-2 space-y-2 text-xs text-mt/60 italic">Nenhum horário</div>
+                    <div class="px-4 pb-3">
+                        <button onclick="alarmeAddTime('whey')" class="text-pu2 text-xs font-bold flex items-center gap-1.5 hover:text-white transition-colors">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>Adicionar horário
+                        </button>
+                    </div>
+                </div>
+                <!-- Status local -->
+                <div class="flex items-center gap-2 px-1">
+                    <span id="alarme-status-dot" class="w-2 h-2 rounded-full bg-bd flex-shrink-0"></span>
+                    <span id="alarme-status-txt" class="text-xs text-mt">Nenhum alarme ativo.</span>
+                </div>
+                <!-- Status push (app fechado) -->
+                <div id="alarme-push-status" class="hidden flex items-center gap-2.5 p-3 rounded-xl text-xs text-white bg-s3 border border-bd/40">
+                    <span id="alarme-push-icon">☁️</span>
+                    <span id="alarme-push-txt" class="flex-1">Sincronizando com servidor...</span>
+                    <button id="alarme-test-btn" onclick="alarmeTestar()" class="hidden bg-pu/80 hover:bg-pu text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors flex-shrink-0">Testar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Avaliação Física do Aluno -->
+    <div id="modal-avaliacao-aluno" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[65] hidden items-center justify-center p-4" onclick="fecharModalAvaliacaoAluno(event)">
+        <div class="glass max-w-sm w-full rounded-3xl overflow-hidden shadow-2xl max-h-[88vh] flex flex-col" onclick="event.stopPropagation()">
+            <div class="h-1 bg-gradient-to-r from-pu to-indigo-500 flex-shrink-0"></div>
+            <div class="p-6 overflow-y-auto">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-bold text-white text-lg flex items-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5 text-pu2"></i>
+                        Minha Avaliação
+                    </h3>
+                    <button onclick="fecharModalAvaliacaoAlunoBtn()" class="text-mt hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div id="av-aluno-loading" class="text-center py-10">
+                    <div class="animate-spin w-7 h-7 border-2 border-pu border-t-transparent rounded-full mx-auto mb-3"></div>
+                    <p class="text-sm text-mt">Carregando...</p>
+                </div>
+
+                <!-- Vazio -->
+                <div id="av-aluno-empty" class="hidden text-center py-10">
+                    <i data-lucide="clipboard-list" class="w-12 h-12 mx-auto mb-3 text-mt opacity-30"></i>
+                    <p class="font-bold text-white text-sm">Nenhuma avaliação ainda</p>
+                    <p class="text-xs text-mt/60 mt-1">Realize sua avaliação física no Studio Focus para acompanhar sua evolução.</p>
+                </div>
+
+                <!-- Conteúdo -->
+                <div id="av-aluno-content" class="hidden">
+                    <div id="av-aluno-latest"></div>
+                    <div id="av-aluno-history" class="hidden mt-5">
+                        <p class="text-[10px] text-mt uppercase font-bold tracking-wider mb-3">Histórico</p>
+                        <div id="av-aluno-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Trocar Senha do Aluno -->
+    <div id="modal-trocar-senha" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
+        <div class="glass max-w-sm w-full rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+            <div class="h-1 bg-gradient-to-r from-pu to-indigo-500"></div>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-bold text-white text-lg flex items-center gap-2">
+                        <i data-lucide="key-round" class="w-5 h-5 text-pu2"></i>
+                        Trocar Senha
+                    </h3>
+                    <button onclick="fecharModalTrocarSenha()" class="text-mt hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <form id="form-aluno-senha" class="space-y-4" onsubmit="salvarNovaSenhaAluno(event)">
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase font-bold tracking-wider text-mt">Senha Atual</label>
+                        <div class="relative">
+                            <input type="password" id="aluno-senha-atual" required autocomplete="current-password"
+                                   class="w-full bg-s3/50 border border-bd rounded-xl py-3 px-4 pr-10 text-white placeholder-mt/50 focus:outline-none focus:border-pu transition-all text-sm"
+                                   placeholder="••••••••">
+                            <button type="button" onclick="toggleVer('aluno-senha-atual', this)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase font-bold tracking-wider text-mt">Nova Senha</label>
+                        <div class="relative">
+                            <input type="password" id="aluno-senha-nova" required minlength="6" autocomplete="new-password"
+                                   class="w-full bg-s3/50 border border-bd rounded-xl py-3 px-4 pr-10 text-white placeholder-mt/50 focus:outline-none focus:border-pu transition-all text-sm"
+                                   placeholder="Mínimo 6 caracteres">
+                            <button type="button" onclick="toggleVer('aluno-senha-nova', this)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase font-bold tracking-wider text-mt">Confirmar Nova Senha</label>
+                        <div class="relative">
+                            <input type="password" id="aluno-senha-confirmar" required minlength="6" autocomplete="new-password"
+                                   class="w-full bg-s3/50 border border-bd rounded-xl py-3 px-4 pr-10 text-white placeholder-mt/50 focus:outline-none focus:border-pu transition-all text-sm"
+                                   placeholder="Repita a nova senha">
+                            <button type="button" onclick="toggleVer('aluno-senha-confirmar', this)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="aluno-senha-erro" class="hidden text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs font-medium"></div>
+                    <button type="submit" id="btn-salvar-senha"
+                            class="w-full bg-pu hover:bg-pu2 text-white font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                        <span>Salvar Nova Senha</span>
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhe do Exercício -->
+    <div id="modal-exercicio" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4" onclick="fecharModalExercicio(event)">
+        <div class="glass max-w-sm w-full rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+            <!-- Linha decorativa no topo (cor dinâmica via JS) -->
+            <div id="modal-top-bar" class="h-1 bg-gradient-to-r from-pu to-indigo-500"></div>
+
+            <!-- Container da Animação -->
+            <div id="modal-animacao-container" class="w-full h-52 bg-s3 flex items-center justify-center overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-s2/60 pointer-events-none z-10"></div>
+            </div>
+
+            <!-- Detalhes -->
+            <div class="p-6">
+                <span id="modal-grupo" class="bg-pu/10 text-pu2 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"></span>
+                <h3 id="modal-nome" class="text-tx font-bold text-xl mt-3 mb-4 leading-tight"></h3>
+
+                <div id="modal-info-grid" class="grid grid-cols-2 gap-3 mb-4"></div>
+
+                <div id="modal-obs-container" class="hidden">
+                    <div class="flex items-start gap-2 bg-s3 border border-bd rounded-xl px-3 py-2.5">
+                        <i data-lucide="info" class="w-3.5 h-3.5 text-pu flex-shrink-0 mt-0.5"></i>
+                        <p id="modal-obs-texto" class="text-xs text-mt italic leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 pb-6">
+                <button onclick="fecharModalExercicioBtn()" class="w-full bg-s3 hover:bg-s2 border border-bd text-mt hover:text-tx py-3 rounded-xl font-bold text-sm transition-all">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé Público -->
+
+
+    <!-- Scripts e Integração Supabase -->
+    <script>
+        const SUPABASE_URL = 'https://dvjjproexhetqlazftln.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2ampwcm9leGhldHFsYXpmdGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzEwNzUsImV4cCI6MjA5NDI0NzA3NX0._Y22KalUdIzT6TzalVR2haBsUvXeeyBeC_cpwPOTKNk';
+        
+        let client = null;
+        let activeAluno = null;
+        let workoutData = {}; // Estrutura do treino do aluno
+        let activeDay = 'seg';
+
+        function toggleVer(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            const eyeOpen  = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+            const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>`;
+            btn.innerHTML = show ? eyeClosed : eyeOpen;
+        }
+
+        // Inicializar Supabase
+        function getDb() {
+            if (!client && window.supabase) {
+                client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return client;
+        }
+
+        // Carregar na Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+            getDb();
+            checkSession();
+        });
+
+        // Verificar Sessão ativa no localStorage
+        async function checkSession() {
+            const saved = localStorage.getItem('sf-aluno-session');
+            if (!saved) {
+                document.documentElement.classList.remove('sf-has-session');
+                return;
+            }
+            let session;
+            try { session = JSON.parse(saved); }
+            catch(e) {
+                localStorage.removeItem('sf-aluno-session');
+                document.documentElement.classList.remove('sf-has-session');
+                return;
+            }
+
+            // Sessão antiga (sem token do servidor) — exige novo login
+            if (!session.sessao) {
+                localStorage.removeItem('sf-aluno-session');
+                document.documentElement.classList.remove('sf-has-session');
+                return;
+            }
+
+            // Carrega o portal imediatamente com os dados em cache (sem esperar rede)
+            loadPortal(session);
+
+            // Atualiza em background sem bloquear a tela
+            try {
+                const db = getDb();
+                if (!db) return;
+                const { data: latest, error } = await db.rpc('aluno_treino', { p_sessao: session.sessao });
+                if (error) return; // falha de rede/servidor — mantém cache
+                if (!latest) {
+                    // Sessão inválida/expirada no servidor — faz logout silencioso
+                    handleLogout();
+                    return;
+                }
+                aplicarTreinoNaSessao(session, latest);
+                localStorage.setItem('sf-aluno-session', JSON.stringify(session));
+                // Atualiza silenciosamente os treinos se houve mudança
+                workoutData = session.exercicios;
+                activeAluno = session;
+                renderCalendarioSemanal();
+                renderExercises();
+            } catch(e) {
+                // Sem rede — mantém dados em cache normalmente
+            }
+        }
+
+        // Lidar com o Login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const userInp = document.getElementById('username').value.trim();
+            const passInp = document.getElementById('password').value.trim();
+            const errDiv = document.getElementById('login-error');
+            const btn = document.getElementById('btn-login');
+
+            errDiv.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Entrando...';
+
+            const db = getDb();
+            if (!db) {
+                showError('Erro de conexão. Tente novamente mais tarde.');
+                resetBtn();
+                return;
+            }
+
+            try {
+                // Validação de usuário/senha acontece no servidor (RPC aluno_login)
+                const { data: res, error } = await db.rpc('aluno_login', { p_usuario: userInp, p_senha: passInp });
+
+                if (error) {
+                    showError('Erro de conexão com o servidor. (' + (error.code || 'rpc') + ')');
+                    resetBtn();
+                    return;
+                }
+                if (!res?.ok) {
+                    showError(res?.erro === 'bloqueado'
+                        ? 'Muitas tentativas. Aguarde 15 minutos e tente novamente.'
+                        : 'Usuário ou senha incorretos.');
+                    resetBtn();
+                    return;
+                }
+
+                const sessionData = { sessao: res.sessao };
+                aplicarTreinoNaSessao(sessionData, res.treino || { exercicios: {} });
+                localStorage.setItem('sf-aluno-session', JSON.stringify(sessionData));
+                loadPortal(sessionData);
+
+            } catch (err) {
+                console.error(err);
+                showError('Erro: ' + (err.message || 'Verifique sua conexão.'));
+                resetBtn();
+            }
+        }
+
+
+        // Pastas dos exercícios são em minúsculas; IDs/caminhos antigos podem ter maiúsculas.
+        // Só mexe em caminhos relativos (".../exercises/<Id>/..."), nunca em URLs externas.
+        function exImg(path) {
+            if (!path || /^(?:[a-z]+:)?\/\//i.test(path) || path.startsWith('data:')) return path;
+            return path.replace(/((?:^|\/)exercises\/)([^/]+)/, (m, a, b) => a + b.toLowerCase());
+        }
+        // Copia o retorno das RPCs (aluno_login / aluno_treino) para o objeto de sessão
+        function aplicarTreinoNaSessao(session, t) {
+            // Resposta sem treino (ex.: erro/offline): mantém o que está em cache.
+            if (!t || t.exercicios === undefined) return session;
+            let exs = t.exercicios;
+            if (typeof exs === 'string') { try { exs = JSON.parse(exs); } catch(e) { exs = {}; } }
+            session.id         = t.id ?? session.id;
+            session.aluno_id   = t.aluno_id ?? session.aluno_id;
+            session.aluno_nome = t.aluno_nome || session.aluno_nome || 'Aluno';
+            session.updated_at = t.updated_at ?? session.updated_at;
+            session.exercicios = exs || {};
+            return session;
+        }
+
+        function showError(msg) {
+            const errDiv = document.getElementById('login-error');
+            document.getElementById('login-error-txt').innerText = msg;
+            errDiv.classList.remove('hidden');
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('btn-login');
+            btn.disabled = false;
+            btn.innerHTML = '<span>Acessar Treino</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Carregar o Portal do Aluno
+        function loadPortal(session) {
+            activeAluno = session;
+            workoutData = session.exercicios || {};
+            
+            // Alterar telas
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('portal-screen').classList.remove('hidden');
+            document.getElementById('portal-screen').classList.add('flex');
+
+            document.getElementById('aluno-nome').innerText = session.aluno_nome;
+
+            // Perfil
+            const perfilNome = document.getElementById('perfil-nome');
+            if(perfilNome) perfilNome.textContent = session.aluno_nome;
+
+            // Subtítulo
+            const dias = {seg:'Segunda-feira',ter:'Terça-feira',qua:'Quarta-feira',qui:'Quinta-feira',sex:'Sexta-feira',sab:'Sábado'};
+            const hoje = new Date();
+            const diaIdx = hoje.getDay(); // 0=dom
+            const diaMap = ['','seg','ter','qua','qui','sex','sab'];
+            const diaHoje = diaMap[diaIdx] || 'seg';
+            const sub = document.getElementById('treino-subtitulo');
+            if(sub) sub.textContent = dias[diaHoje] || '';
+
+            // Stats
+            atualizarStats();
+
+            // Calendário semanal
+            renderCalendarioSemanal();
+
+            // Abre no dia atual
+            activeDay = diaHoje;
+            changeDay(diaHoje);
+
+            // Bottom nav default
+            mudarAbaApp('treino');
+
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // ── Bottom Navigation ──
+        let _abaAtiva = 'treino';
+        function mudarAbaApp(aba) {
+            _abaAtiva = aba;
+            ['treino','perfil'].forEach(id => {
+                const panel = document.getElementById('app-' + id);
+                const nav = document.getElementById('nav-' + id);
+                if (id === aba) {
+                    panel?.classList.remove('hidden');
+                    nav?.classList.remove('text-mt');
+                    nav?.classList.add('text-pu2');
+                } else {
+                    panel?.classList.add('hidden');
+                    nav?.classList.remove('text-pu2');
+                    nav?.classList.add('text-mt');
+                }
+            });
+            document.getElementById('app-scroll')?.scrollTo(0,0);
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // ── Calendário semanal ──
+        function renderCalendarioSemanal() {
+            const cal = document.getElementById('calendario-semanal');
+            const dots = document.getElementById('calendario-dots');
+            if (!cal) return;
+            const hoje = new Date();
+            const diaSemana = hoje.getDay();
+            const inicioSemana = new Date(hoje);
+            inicioSemana.setDate(hoje.getDate() - diaSemana);
+            const labels = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+            const diaMap = ['','seg','ter','qua','qui','sex','sab'];
+            let calHtml = '', dotsHtml = '';
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(inicioSemana);
+                d.setDate(inicioSemana.getDate() + i);
+                const isToday = d.toDateString() === hoje.toDateString();
+                const diaKey = diaMap[i] || '';
+                const isActive = diaKey && diaKey === activeDay;
+                const hasTreino = diaKey && (workoutData[diaKey]?.length > 0);
+                const click = diaKey ? `onclick="changeDay('${diaKey}')" style="cursor:pointer"` : '';
+                let circleClass = 'w-8 h-8 flex items-center justify-center text-sm font-medium';
+                if (isActive)      circleClass += ' bg-pu rounded-full text-white font-bold ring-2 ring-pu/30';
+                else if (isToday)  circleClass += ' bg-white/20 rounded-full text-white font-bold';
+                else               circleClass += ' text-mt';
+                calHtml += `<div class="flex flex-col items-center gap-1 flex-1" ${click}>
+                    <span class="text-[10px] font-semibold ${isActive ? 'text-pu2' : hasTreino ? 'text-white/80' : 'text-mt'}">${labels[i]}</span>
+                    <div class="${circleClass}">${d.getDate()}</div>
+                </div>`;
+                const wk = getWeekKey();
+                const ck = `sf-completed-${activeAluno?.aluno_id}-${diaKey}-${wk}`;
+                let completed = false;
+                try { const c = JSON.parse(localStorage.getItem(ck)) || []; completed = c.length > 0; } catch(e){}
+                dotsHtml += `<div class="flex-1 flex justify-center"><div class="w-1.5 h-1.5 rounded-full ${completed ? 'bg-pu' : hasTreino ? 'bg-pu/30' : 'bg-transparent'}"></div></div>`;
+            }
+            cal.innerHTML = calHtml;
+            dots.innerHTML = dotsHtml;
+        }
+
+        // ── Stats ──
+        function atualizarStats() {
+            const todayKey = `sf-completed-${activeAluno?.aluno_id}-${activeDay}-${getWeekKey()}`;
+            let done = 0;
+            try { done = (JSON.parse(localStorage.getItem(todayKey)) || []).length; } catch(e){}
+            const stHoje = document.getElementById('stat-hoje');
+            if(stHoje) stHoje.textContent = done;
+            // Mês e total: contamos keys no localStorage
+            let mes = 0, total = 0;
+            const now = new Date();
+            const mesKey = `${now.getFullYear()}-${now.getMonth()}`;
+            for(let i=0;i<localStorage.length;i++){
+                const k = localStorage.key(i);
+                if(k && k.startsWith('sf-completed-' + activeAluno?.aluno_id)){
+                    try{ const v=JSON.parse(localStorage.getItem(k))||[]; if(v.length>0){total++; if(k.includes(getWeekKey())) mes+=v.length;} }catch(e){}
+                }
+            }
+            const stMes = document.getElementById('stat-mes'); if(stMes) stMes.textContent = mes;
+            const stTotal = document.getElementById('stat-total'); if(stTotal) stTotal.textContent = total;
+        }
+
+        // ── Histórico ──
+        // Alterar dia ativo
+        function changeDay(dia) {
+            activeDay = dia;
+            const nomes = {seg:'Segunda-feira',ter:'Terça-feira',qua:'Quarta-feira',qui:'Quinta-feira',sex:'Sexta-feira',sab:'Sábado'};
+            const sub = document.getElementById('treino-subtitulo');
+            if (sub) sub.textContent = nomes[dia] || '';
+            const labelEl = document.getElementById('label-exercicios-dia');
+            if (labelEl) {
+                const hoje = new Date();
+                const diaHoje = ['','seg','ter','qua','qui','sex','sab'][hoje.getDay()] || 'seg';
+                labelEl.textContent = dia === diaHoje ? 'Exercícios de hoje' : `Exercícios — ${nomes[dia] || dia}`;
+            }
+            renderCalendarioSemanal();
+            renderExercises();
+        }
+
+        // Retorna a animação correspondente ao tipo de exercício
+        function getExerciseAnimation(nome, grupo) {
+            const nameLower = (nome || '').toLowerCase();
+            const groupLower = (grupo || '').toLowerCase();
+
+            // Peito / Supino / Chest
+            if (nameLower.includes('supino') || nameLower.includes('peito') || nameLower.includes('flexao') || nameLower.includes('flexão') || nameLower.includes('fly') || nameLower.includes('cross') || nameLower.includes('crusher') || groupLower.includes('peito') || groupLower.includes('peitorais')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <line x1="8" y1="36" x2="56" y2="36" stroke-width="3" style="animation: barbell-press 2s ease-in-out infinite; transform-origin: 32px 36px;" />
+                       <rect x="6" y="28" width="4" height="16" rx="1" fill="currentColor" style="animation: barbell-press 2s ease-in-out infinite; transform-origin: 32px 36px;" />
+                       <rect x="54" y="28" width="4" height="16" rx="1" fill="currentColor" style="animation: barbell-press 2s ease-in-out infinite; transform-origin: 32px 36px;" />
+                       <path d="M20 48h24M32 36v12" stroke-opacity="0.3" />
+                   </svg>
+                `;
+            }
+            // Pernas / Squat
+            if (nameLower.includes('agachamento') || nameLower.includes('leg') || nameLower.includes('perna') || nameLower.includes('extensora') || nameLower.includes('flexora') || nameLower.includes('panturrilha') || nameLower.includes('agacha') || nameLower.includes('passada') || nameLower.includes('afundo') || nameLower.includes('hack') || groupLower.includes('pernas') || groupLower.includes('perna') || groupLower.includes('gluteos') || groupLower.includes('glúteos') || groupLower.includes('quadriceps')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <path d="M16 52V16h32v36" stroke-opacity="0.3" stroke-width="1.5" />
+                       <line x1="8" y1="24" x2="56" y2="24" stroke-width="3" style="animation: squat-glide 2.4s ease-in-out infinite; transform-origin: 32px 24px;" />
+                       <circle cx="12" cy="24" r="3" fill="currentColor" style="animation: squat-glide 2.4s ease-in-out infinite; transform-origin: 32px 24px;" />
+                       <circle cx="52" cy="24" r="3" fill="currentColor" style="animation: squat-glide 2.4s ease-in-out infinite; transform-origin: 32px 24px;" />
+                       <path d="M24 52h16" stroke-width="2" />
+                   </svg>
+                `;
+            }
+            // Costas / Pulldown / Row
+            if (nameLower.includes('puxador') || nameLower.includes('puxada') || nameLower.includes('remada') || nameLower.includes('costas') || nameLower.includes('dorsal') || nameLower.includes('pulldown') || nameLower.includes('terra') || nameLower.includes('crucifixo invertido') || nameLower.includes('barra fixa') || groupLower.includes('costas') || groupLower.includes('dorsal')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <path d="M32 10v20" stroke-width="1.5" stroke-dasharray="2 2" stroke-opacity="0.5" />
+                       <line x1="12" y1="20" x2="52" y2="20" stroke-width="3" style="animation: bar-pulldown 2.2s ease-in-out infinite; transform-origin: 32px 20px;" />
+                       <circle cx="12" cy="20" r="2.5" fill="currentColor" style="animation: bar-pulldown 2.2s ease-in-out infinite; transform-origin: 32px 20px;" />
+                       <circle cx="52" cy="20" r="2.5" fill="currentColor" style="animation: bar-pulldown 2.2s ease-in-out infinite; transform-origin: 32px 20px;" />
+                       <path d="M24 48l8-10 8 10" stroke-opacity="0.4" />
+                   </svg>
+                `;
+            }
+            // Ombros / Shoulders
+            if (nameLower.includes('ombro') || nameLower.includes('desenvolvimento') || nameLower.includes('elevacao') || nameLower.includes('elevação') || nameLower.includes('lateral') || nameLower.includes('frontal') || nameLower.includes('trapezio') || nameLower.includes('trapézio') || groupLower.includes('ombros') || groupLower.includes('ombro') || groupLower.includes('trapezio')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <g style="animation: shoulder-fly 2s ease-in-out infinite; transform-origin: 32px 40px;">
+                           <line x1="16" y1="28" x2="48" y2="28" stroke-width="2.5" />
+                           <circle cx="14" cy="28" r="3" fill="currentColor" />
+                           <circle cx="50" cy="28" r="3" fill="currentColor" />
+                       </g>
+                       <path d="M32 28v20" stroke-opacity="0.3" />
+                   </svg>
+                `;
+            }
+            // Cardio / Esteira
+            if (nameLower.includes('esteira') || nameLower.includes('cardio') || nameLower.includes('corrida') || nameLower.includes('bicicleta') || nameLower.includes('bike') || nameLower.includes('caminhada') || nameLower.includes('aerobico') || nameLower.includes('aeróbico') || nameLower.includes('hiit') || groupLower.includes('cardio') || groupLower.includes('aeróbico')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <path d="M8 32h12l4-12 6 24 5-18 4 6h17" stroke-width="3" stroke-dasharray="100" stroke-dashoffset="0" style="animation: cardio-pulse 2s linear infinite;" />
+                       <circle cx="32" cy="32" r="28" stroke-width="1.5" stroke-opacity="0.2" />
+                   </svg>
+                `;
+            }
+            // Abdomen / Core
+            if (nameLower.includes('abdominal') || nameLower.includes('abdomen') || nameLower.includes('abdômen') || nameLower.includes('prancha') || nameLower.includes('core') || nameLower.includes('infra') || nameLower.includes('supra') || groupLower.includes('abdominal') || groupLower.includes('abdomen') || groupLower.includes('abdômen')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <circle cx="32" cy="32" r="12" stroke-width="3" style="animation: core-pulse 1.8s ease-in-out infinite; transform-origin: 32px 32px;" />
+                       <circle cx="32" cy="32" r="22" stroke-opacity="0.4" style="animation: core-pulse 1.8s ease-in-out infinite 0.3s; transform-origin: 32px 32px;" />
+                       <circle cx="32" cy="32" r="4" fill="currentColor" />
+                   </svg>
+                `;
+            }
+            // Braços / Biceps / Triceps (default for arms)
+            if (nameLower.includes('rosca') || nameLower.includes('biceps') || nameLower.includes('bíceps') || nameLower.includes('triceps') || nameLower.includes('tríceps') || nameLower.includes('antebraço') || nameLower.includes('antebraco') || nameLower.includes('flexao braço') || groupLower.includes('braços') || groupLower.includes('braço') || groupLower.includes('biceps') || groupLower.includes('triceps')) {
+                return `
+                   <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                       <g style="animation: bicep-flex 1.8s ease-in-out infinite; transform-origin: 16px 44px;">
+                           <rect x="24" y="28" width="16" height="6" rx="1" fill="currentColor" />
+                           <rect x="20" y="20" width="4" height="22" rx="1" fill="currentColor" />
+                           <rect x="40" y="20" width="4" height="22" rx="1" fill="currentColor" />
+                           <circle cx="32" cy="31" r="3" fill="currentColor" />
+                       </g>
+                       <path d="M12 48h40" stroke-opacity="0.3" />
+                   </svg>
+                `;
+            }
+            // Outros / Genérico
+            return `
+               <svg class="w-12 h-12 text-pu" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                   <circle cx="32" cy="32" r="16" stroke-width="3" style="animation: generic-rotate 6s linear infinite; transform-origin: 32px 32px;" />
+                   <line x1="32" y1="16" x2="32" y2="48" style="animation: generic-rotate 6s linear infinite; transform-origin: 32px 32px;" />
+                   <line x1="16" y1="32" x2="48" y2="32" style="animation: generic-rotate 6s linear infinite; transform-origin: 32px 32px;" />
+                   <circle cx="32" cy="32" r="6" fill="currentColor" />
+               </svg>
+            `;
+        }
+
+        // ── Helpers: cor e ícone por grupo muscular ──
+        function getGroupColor(grupo) {
+            const g = (grupo || '').toLowerCase();
+            if (g.includes('abdôm') || g.includes('abdom') || g.includes('core')) return {color:'#8b5cf6', bg:'rgba(139,92,246,0.15)'};
+            if (g.includes('peito') || g.includes('peitoral')) return {color:'#10b981', bg:'rgba(16,185,129,0.15)'};
+            if (g.includes('costa') || g.includes('dorsal')) return {color:'#f97316', bg:'rgba(249,115,22,0.15)'};
+            if (g.includes('perna') || g.includes('glut') || g.includes('quadric')) return {color:'#3b82f6', bg:'rgba(59,130,246,0.15)'};
+            if (g.includes('ombro') || g.includes('trapez')) return {color:'#eab308', bg:'rgba(234,179,8,0.15)'};
+            if (g.includes('braço') || g.includes('bicep') || g.includes('tricep')) return {color:'#ec4899', bg:'rgba(236,72,153,0.15)'};
+            if (g.includes('cardio') || g.includes('aerob')) return {color:'#ef4444', bg:'rgba(239,68,68,0.15)'};
+            return {color:'#8b5cf6', bg:'rgba(139,92,246,0.15)'};
+        }
+
+        function getGroupIcon(grupo, nome) {
+            const g = (grupo || '').toLowerCase();
+            const n = (nome || '').toLowerCase();
+            if (g.includes('abdôm') || g.includes('abdom') || g.includes('core') || n.includes('abdominal') || n.includes('prancha')) return 'activity';
+            if (g.includes('peito') || g.includes('peitoral') || n.includes('supino') || n.includes('fly') || n.includes('cross')) return 'dumbbell';
+            if (g.includes('costa') || g.includes('dorsal') || n.includes('remada') || n.includes('puxador')) return 'git-merge';
+            if (g.includes('perna') || g.includes('glut') || g.includes('quadric') || n.includes('agachamento') || n.includes('leg')) return 'footprints';
+            if (g.includes('ombro') || g.includes('trapez') || n.includes('desenvolvimento')) return 'chevrons-up';
+            if (g.includes('braço') || g.includes('bicep') || g.includes('tricep') || n.includes('rosca')) return 'zap';
+            if (g.includes('cardio') || g.includes('aerob') || n.includes('esteira') || n.includes('corrida')) return 'heart';
+            return 'dumbbell';
+        }
+
+        let _currentDayTotal = 0;
+
+        function updateProgressBar() {
+            const container = document.getElementById('progress-ring-container');
+            const label = document.getElementById('progress-pct-label');
+            const ring = document.getElementById('progress-ring');
+            if (!container || !activeAluno || _currentDayTotal === 0) {
+                if (container) container.classList.add('hidden');
+                return;
+            }
+            const todayKey = `sf-completed-${activeAluno.aluno_id}-${activeDay}-${getWeekKey()}`;
+            let completedList = [];
+            try { completedList = JSON.parse(localStorage.getItem(todayKey)) || []; } catch(e) {}
+            const done = completedList.filter(i => i < _currentDayTotal).length;
+            const pct = Math.round((done / _currentDayTotal) * 100);
+            container.classList.remove('hidden');
+            if (label) label.textContent = `${pct}%`;
+            if (ring) {
+                const circumference = 175.93;
+                ring.style.strokeDashoffset = circumference - (pct / 100) * circumference;
+            }
+            atualizarStats();
+        }
+
+        // Obtém uma key baseada na semana atual (zera toda segunda-feira)
+        function getWeekKey() {
+            const d = new Date();
+            const day = d.getDay() || 7; // Domingo é 0, vira 7
+            d.setHours(-24 * (day - 1)); // Retorna para segunda-feira da semana
+            return d.toDateString();
+        }
+
+        // Renderizar Exercícios do Dia Ativo
+        function renderExercises() {
+            const container = document.getElementById('exercicios-lista');
+            const emptyState = document.getElementById('empty-state');
+            const feedbackContainer = document.getElementById('feedback-dia-container');
+            container.innerHTML = '';
+
+            const list = workoutData[activeDay] || [];
+
+            if (list.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                if (feedbackContainer) feedbackContainer.classList.add('hidden');
+                _currentDayTotal = 0;
+                updateProgressBar();
+                return;
+            }
+
+            container.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            _currentDayTotal = list.length;
+
+            const todayKey = `sf-completed-${activeAluno.aluno_id}-${activeDay}-${getWeekKey()}`;
+            let completedList = [];
+            try {
+                completedList = JSON.parse(localStorage.getItem(todayKey)) || [];
+            } catch(e) {}
+
+            list.forEach((ex, index) => {
+                const isCompleted = completedList.includes(index);
+                const { color, bg } = getGroupColor(ex.grupo);
+                const icon = getGroupIcon(ex.grupo, ex.nome);
+                const exData = JSON.stringify(ex).replace(/'/g, "&#39;");
+
+                const card = document.createElement('div');
+                card.className = 'exercise-card rounded-2xl overflow-hidden transition-all duration-200' +
+                    (isCompleted ? ' opacity-60' : '');
+                card.style.cssText = `border-left:3px solid ${color};`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 px-4 py-3.5">
+                        <div class="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden" style="background:${bg}">
+                            ${ex.exerciseId
+                                ? `<img src="${exImg(`../admin/exercises/${ex.exerciseId}/anim.webp`)}" alt="${ex.nome}" class="w-full h-full object-cover" onerror="this.outerHTML='<div class=\\'w-full h-full flex items-center justify-center\\'><i data-lucide=\\'${icon}\\' class=\\'w-5 h-5\\' style=\\'color:${color}\\'></i></div>'">`
+                                : `<div class="w-full h-full flex items-center justify-center"><i data-lucide="${icon}" class="w-5 h-5" style="color:${color}"></i></div>`
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0 cursor-pointer" onclick='abrirModalExercicio(${exData})'>
+                            <span class="text-[10px] uppercase font-bold tracking-wider block" style="color:${color}">${ex.grupo || 'Geral'}</span>
+                            <h4 class="font-bold text-sm ex-title leading-snug ${isCompleted ? 'line-through opacity-50' : ''}">${ex.nome}</h4>
+                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                ${(() => { const s = ex.series != null && ex.series !== '' ? String(ex.series) : ''; const r = ex.repeticoes != null && ex.repeticoes !== '' ? String(ex.repeticoes) : ''; const lbl = s && r ? s+' × '+r : (s || r || ''); return lbl ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg" style="background:${bg};color:${color}"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>${lbl}</span>` : ''; })()}
+                                ${ex.carga ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18"/></svg>${ex.carga}</span>` : ''}
+                                ${ex.obs ? `<span class="inline-flex items-center gap-1 text-[11px] text-mt/60 italic truncate max-w-[160px]">${ex.obs}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <input type="checkbox" id="ex-${index}" class="hidden"
+                                   ${isCompleted ? 'checked' : ''} onchange="toggleExercise(${index}, this)">
+                            <label for="ex-${index}" class="w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all
+                                ${isCompleted ? 'border-emerald-500 bg-emerald-500' : 'border-bd bg-transparent hover:border-emerald-500/50'}">
+                                <i data-lucide="check" class="w-4 h-4 ${isCompleted ? 'text-white' : 'text-transparent'}"></i>
+                            </label>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (window.lucide) window.lucide.createIcons();
+            updateProgressBar();
+
+            if (feedbackContainer) {
+                feedbackContainer.classList.remove('hidden');
+                carregarFeedbackUI();
+            }
+        }
+
+        // Marcar/Desmarcar exercício
+        function toggleExercise(index, checkbox) {
+            const todayKey = `sf-completed-${activeAluno.aluno_id}-${activeDay}-${getWeekKey()}`;
+            let completedList = [];
+            try {
+                completedList = JSON.parse(localStorage.getItem(todayKey)) || [];
+            } catch(e) {}
+
+            if (checkbox.checked) {
+                if (!completedList.includes(index)) completedList.push(index);
+            } else {
+                completedList = completedList.filter(i => i !== index);
+            }
+            localStorage.setItem(todayKey, JSON.stringify(completedList));
+            updateProgressBar();
+            renderCalendarioSemanal();
+
+            const card = checkbox.closest('.exercise-card');
+            const title = card.querySelector('.ex-title');
+            const label = card.querySelector('label');
+            const checkIcon = label.querySelector('i');
+
+            if (checkbox.checked) {
+                card.classList.add('opacity-75');
+                title.classList.add('line-through', 'text-slate-500');
+                title.classList.remove('text-white');
+                label.classList.add('bg-emerald-500', 'border-emerald-500');
+                label.classList.remove('border-bd', 'bg-transparent');
+                checkIcon.classList.remove('text-transparent');
+                checkIcon.classList.add('text-white');
+            } else {
+                card.classList.remove('opacity-75');
+                title.classList.remove('line-through', 'text-slate-500');
+                title.classList.add('text-white');
+                label.classList.remove('bg-emerald-500', 'border-emerald-500');
+                label.classList.add('border-bd', 'bg-transparent');
+                checkIcon.classList.add('text-transparent');
+                checkIcon.classList.remove('text-white');
+            }
+        }
+
+        // Abrir modal de detalhe do exercício
+        function abrirModalExercicio(ex) {
+            const container = document.getElementById('modal-animacao-container');
+
+            // Limpa e insere a animação em tamanho grande
+            const gradientEl = container.querySelector('.absolute');
+            container.innerHTML = '';
+            if (gradientEl) container.appendChild(gradientEl);
+
+            let finalUrl = exImg((ex.animacao || (ex.exerciseId ? `admin/exercises/${ex.exerciseId}/anim.webp` : '')).trim());
+            if (finalUrl.startsWith('admin/')) finalUrl = '../' + finalUrl;
+
+            if (finalUrl) {
+                const img = document.createElement('img');
+                img.src = finalUrl;
+                img.alt = ex.nome;
+                img.className = 'w-full h-full object-cover';
+                container.insertBefore(img, container.firstChild);
+            } else {
+                // SVG animado em tamanho maior
+                const wrap = document.createElement('div');
+                wrap.innerHTML = getExerciseAnimation(ex.nome, ex.grupo);
+                const svg = wrap.querySelector('svg');
+                if (svg) {
+                    svg.classList.remove('w-12', 'h-12');
+                    svg.classList.add('w-24', 'h-24');
+                    container.insertBefore(svg, container.firstChild);
+                }
+            }
+
+            document.getElementById('modal-grupo').textContent = ex.grupo || 'Geral';
+            document.getElementById('modal-nome').textContent = ex.nome;
+
+            const infoGrid = document.getElementById('modal-info-grid');
+            const infoItem = (icon, label, val, colorClass = 'text-tx') => val ? `
+                <div class="modal-info-card flex items-center gap-2.5 bg-s3 border border-bd rounded-xl px-3 py-2.5">
+                    <i data-lucide="${icon}" class="w-4 h-4 text-pu flex-shrink-0"></i>
+                    <div>
+                        <p class="text-[10px] text-mt uppercase font-bold tracking-wider">${label}</p>
+                        <p class="font-bold text-sm ${colorClass}">${val}</p>
+                    </div>
+                </div>` : '';
+            const _s = ex.series != null && ex.series !== '' ? String(ex.series) : '';
+            const _r = ex.repeticoes != null && ex.repeticoes !== '' ? String(ex.repeticoes) : '';
+            // Backward compat: old "3x12" combined string
+            let _sDisp = _s, _rDisp = _r;
+            if (_s && !_r && /^\d+[xX]\d+$/.test(_s)) { const p = _s.split(/[xX]/); _sDisp = p[0]; _rDisp = p[1]; }
+            infoGrid.innerHTML =
+                infoItem('layers', 'Séries', _sDisp || '-') +
+                infoItem('repeat', 'Repetições', _rDisp || '-') +
+                infoItem('weight', 'Carga', ex.carga || 'Livre', 'text-emerald-500');
+
+            const obsContainer = document.getElementById('modal-obs-container');
+            if (ex.obs) {
+                document.getElementById('modal-obs-texto').textContent = ex.obs;
+                obsContainer.classList.remove('hidden');
+            } else {
+                obsContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('modal-exercicio');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function fecharModalExercicio(event) {
+            if (event && event.target !== document.getElementById('modal-exercicio')) return;
+            document.getElementById('modal-exercicio').classList.add('hidden');
+            document.getElementById('modal-exercicio').classList.remove('flex');
+        }
+        function fecharModalExercicioBtn() {
+            document.getElementById('modal-exercicio').classList.add('hidden');
+            document.getElementById('modal-exercicio').classList.remove('flex');
+        }
+
+        // ──────────────────────────────────────────────
+        // CARGAS POR SÉRIE & FEEDBACK DO TREINO
+        // ──────────────────────────────────────────────
+        function parseSeriesCount(seriesStr) {
+            if (!seriesStr) return 3;
+            const m = seriesStr.match(/^(\d+)/);
+            return m ? Math.min(parseInt(m[1]), 8) : 3;
+        }
+
+        function getCargasKey() {
+            return `sf-cg-${activeAluno.aluno_id}-${activeDay}-${getWeekKey()}`;
+        }
+
+        function carregarCargas() {
+            try { return JSON.parse(localStorage.getItem(getCargasKey())) || {}; } catch(e) { return {}; }
+        }
+
+        function salvarCargaSerie(exIndex, serieIndex, value) {
+            const cargas = carregarCargas();
+            if (!cargas[exIndex]) cargas[exIndex] = [];
+            cargas[exIndex][serieIndex] = value;
+            localStorage.setItem(getCargasKey(), JSON.stringify(cargas));
+        }
+
+        let _dificuldadeSelecionada = 0;
+        let _autoSaveTimeout = null;
+
+        function getFeedbackKey() {
+            return `sf-fb-${activeAluno.aluno_id}-${activeDay}-${getWeekKey()}`;
+        }
+
+        function carregarFeedback() {
+            try { return JSON.parse(localStorage.getItem(getFeedbackKey())) || {}; } catch(e) { return {}; }
+        }
+
+        function enviarFeedbackWhatsApp() {
+            const nomes = {seg:'Segunda-feira',ter:'Terça-feira',qua:'Quarta-feira',qui:'Quinta-feira',sex:'Sexta-feira',sab:'Sábado'};
+            const difLabels = ['','😊 Fácil','👍 Ok','⚡ Moderado','🔥 Hard','💥 Máximo'];
+            const obs = document.getElementById('obs-treino-dia')?.value.trim() || '';
+            const dif = _dificuldadeSelecionada;
+            const lista = (workoutData[activeDay] || []).map(e => { const s = e.series != null && e.series !== '' ? String(e.series) : ''; const r = e.repeticoes != null && e.repeticoes !== '' ? String(e.repeticoes) : ''; const sr = s && r ? s+'×'+r : (s || r); return `• ${e.nome}${sr ? ' – ' + sr : ''}`; }).join('\n');
+            const nome = activeAluno?.aluno_nome || 'Aluno';
+            const hoje = new Date().toLocaleDateString('pt-BR');
+
+            let msg = `*Feedback de Treino – Studio Focus*\n`;
+            msg += `👤 ${nome} · ${nomes[activeDay] || activeDay} (${hoje})\n`;
+            if (dif) msg += `📊 Dificuldade: ${difLabels[dif]}\n`;
+            if (lista) msg += `\n*Exercícios realizados:*\n${lista}\n`;
+            if (obs) msg += `\n💬 Obs: ${obs}`;
+
+            window.open(`https://wa.me/5514982180923?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+
+        function selecionarDificuldade(nivel) {
+            _dificuldadeSelecionada = nivel;
+            _aplicarEstiloDificuldade();
+            autoSaveFeedback();
+        }
+
+        function _aplicarEstiloDificuldade() {
+            const selColors = ['#10b981','#84cc16','#eab308','#f97316','#ef4444'];
+            document.querySelectorAll('.dif-btn').forEach((btn, i) => {
+                const ativo = i + 1 === _dificuldadeSelecionada;
+                const c = selColors[i];
+                btn.style.borderColor      = ativo ? c : '';
+                btn.style.backgroundColor  = ativo ? c + '33' : '';
+                btn.style.boxShadow        = ativo ? `0 0 0 2px ${c}55` : '';
+                const span = btn.querySelector('span');
+                const icon = btn.querySelector('i, svg');
+                if (span) span.style.color = ativo ? '#ffffff' : '';
+                if (icon) icon.style.color = ativo ? c : '';
+            });
+        }
+
+        function autoSaveFeedback() {
+            clearTimeout(_autoSaveTimeout);
+            _autoSaveTimeout = setTimeout(() => {
+                const obs = document.getElementById('obs-treino-dia')?.value || '';
+                localStorage.setItem(getFeedbackKey(), JSON.stringify({ dificuldade: _dificuldadeSelecionada, obs }));
+                const badge = document.getElementById('feedback-salvo-badge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    setTimeout(() => badge.classList.add('hidden'), 2000);
+                }
+            }, 600);
+        }
+
+        function carregarFeedbackUI() {
+            const fb = carregarFeedback();
+            _dificuldadeSelecionada = fb.dificuldade || 0;
+            const obsEl = document.getElementById('obs-treino-dia');
+            if (obsEl) obsEl.value = fb.obs || '';
+            if (window.lucide) window.lucide.createIcons();
+            _aplicarEstiloDificuldade();
+        }
+
+        // ──────────────────────────────────────────────
+        // TROCAR SENHA DO ALUNO
+        // ──────────────────────────────────────────────
+        function abrirModalTrocarSenha() {
+            document.getElementById('form-aluno-senha').reset();
+            document.getElementById('aluno-senha-erro').classList.add('hidden');
+            const modal = document.getElementById('modal-trocar-senha');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function fecharModalTrocarSenha() {
+            const modal = document.getElementById('modal-trocar-senha');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function salvarNovaSenhaAluno(event) {
+            event.preventDefault();
+            const senhaAtual    = document.getElementById('aluno-senha-atual').value;
+            const senhaNova     = document.getElementById('aluno-senha-nova').value;
+            const senhaConfirmar = document.getElementById('aluno-senha-confirmar').value;
+            const erroEl        = document.getElementById('aluno-senha-erro');
+            const btn           = document.getElementById('btn-salvar-senha');
+
+            erroEl.classList.add('hidden');
+
+            if (senhaNova.length < 6) {
+                erroEl.textContent = 'A nova senha deve ter pelo menos 6 caracteres.';
+                erroEl.classList.remove('hidden');
+                return;
+            }
+            if (senhaNova !== senhaConfirmar) {
+                erroEl.textContent = 'A nova senha e a confirmação não coincidem.';
+                erroEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>';
+
+            const db = getDb();
+            try {
+                // Verificação e gravação (bcrypt) acontecem no servidor
+                const { data: res, error } = await db.rpc('aluno_trocar_senha', {
+                    p_sessao: activeAluno.sessao, p_atual: senhaAtual, p_nova: senhaNova
+                });
+                if (error) throw error;
+
+                if (!res?.ok) {
+                    if (res?.erro === 'sessao') { fecharModalTrocarSenha(); handleLogout(); return; }
+                    erroEl.textContent = {
+                        senha_atual: 'Senha atual incorreta.',
+                        bloqueado:   'Muitas tentativas. Aguarde 15 minutos.',
+                        senha_curta: 'A nova senha deve ter pelo menos 6 caracteres.'
+                    }[res?.erro] || 'Erro ao verificar senha.';
+                    erroEl.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Salvar Nova Senha</span><i data-lucide="check" class="w-4 h-4"></i>';
+                    if (window.lucide) window.lucide.createIcons();
+                    return;
+                }
+
+                fecharModalTrocarSenha();
+                mostrarToastTreino('Senha alterada com sucesso!', 'success');
+
+            } catch (err) {
+                console.error(err);
+                erroEl.textContent = 'Erro ao salvar. Verifique sua conexão.';
+                erroEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Salvar Nova Senha</span><i data-lucide="check" class="w-4 h-4"></i>';
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
+
+        // ──────────────────────────────────────────────
+        // REDEFINIÇÃO DE SENHA: o personal envia um novo link de acesso
+        // (tokens_acesso, uso único). Não há autoatendimento.
+        // ──────────────────────────────────────────────
+        function abrirRedefinirSenha() {
+            document.getElementById('login-screen').classList.add('hidden');
+            const rs = document.getElementById('reset-screen');
+            rs.classList.remove('hidden');
+            rs.classList.add('flex');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function voltarParaLogin() {
+            document.getElementById('reset-screen').classList.add('hidden');
+            document.getElementById('reset-screen').classList.remove('flex');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        // ──────────────────────────────────────────────
+        // AVALIAÇÃO FÍSICA DO ALUNO
+        // ──────────────────────────────────────────────
+        async function abrirModalAvaliacaoAluno() {
+            const modal = document.getElementById('modal-avaliacao-aluno');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('av-aluno-loading').classList.remove('hidden');
+            document.getElementById('av-aluno-empty').classList.add('hidden');
+            document.getElementById('av-aluno-content').classList.add('hidden');
+            if (window.lucide) window.lucide.createIcons();
+            await fetchAvaliacoesAluno();
+        }
+
+        function fecharModalAvaliacaoAluno(event) {
+            if (event && event.target !== document.getElementById('modal-avaliacao-aluno')) return;
+            document.getElementById('modal-avaliacao-aluno').classList.add('hidden');
+            document.getElementById('modal-avaliacao-aluno').classList.remove('flex');
+        }
+
+        function fecharModalAvaliacaoAlunoBtn() {
+            document.getElementById('modal-avaliacao-aluno').classList.add('hidden');
+            document.getElementById('modal-avaliacao-aluno').classList.remove('flex');
+        }
+
+        async function fetchAvaliacoesAluno() {
+            const db = getDb();
+            if (!db || !activeAluno) return;
+            const { data: res, error } = await db.rpc('aluno_avaliacoes', { p_sessao: activeAluno.sessao });
+            const data = res?.fichas;
+
+            document.getElementById('av-aluno-loading').classList.add('hidden');
+
+            if (error || !data || data.length === 0) {
+                document.getElementById('av-aluno-empty').classList.remove('hidden');
+                return;
+            }
+
+            const mapped = data.map(f => {
+                const d = f.dados || {};
+                return {
+                    data:               f.data,
+                    objetivo:           d['an-objetivos']       || null,
+                    peso:               d['bio-peso']           ?? d['imc-peso']   ?? null,
+                    gordura_pct:        d['bio-gordura-pct']    ?? null,
+                    gordura_kg:         d['bio-gordura-kg']     ?? null,
+                    massa_magra:        d['bio-massa-magra']    ?? null,
+                    massa_muscular:     d['bio-massa-muscular'] ?? null,
+                    gordura_visceral:   d['bio-visceral']       ?? null,
+                    agua_pct:           d['bio-agua']           ?? null,
+                    imc:                d['bio-imc']            ?? null,
+                    metabolismo_basal:  d['bio-tmb']            ?? null,
+                    idade_metabolica:   d['bio-idade-met']      ?? null,
+                    obs:                d['post-obs']           || null,
+                };
+            });
+
+            document.getElementById('av-aluno-content').classList.remove('hidden');
+            renderAvaliacoesAluno(mapped);
+        }
+
+        function renderAvaliacoesAluno(list) {
+            const latest = list[0];
+            const prev = list[1] || null;
+
+            const fmtDt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+            const evol = (field) => {
+                if (!prev || prev[field] == null || latest[field] == null) return '';
+                const d = parseFloat((latest[field] - prev[field]).toFixed(1));
+                if (d === 0) return '';
+                const isGood = ['gordura_pct','gordura_kg','gordura_visceral'].includes(field) ? d < 0 : d > 0;
+                return `<span class="${isGood ? 'text-emerald-400' : 'text-red-400'} text-[10px] font-bold block mt-0.5">${d > 0 ? '+' : ''}${d}</span>`;
+            };
+
+            const card = (label, val, unit, field, color = 'text-white') => {
+                if (val == null) return '';
+                return `<div class="bg-s3/50 border border-bd/30 rounded-xl p-3 text-center">
+                    <p class="text-[10px] text-mt/70 font-bold uppercase tracking-wider mb-1 leading-tight">${label}</p>
+                    <p class="${color} font-bold text-sm">${val}${unit}</p>
+                    ${evol(field)}
+                </div>`;
+            };
+
+            const latestEl = document.getElementById('av-aluno-latest');
+            latestEl.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-[10px] text-mt/60 font-bold uppercase tracking-wider">Última Avaliação</p>
+                        <p class="text-white font-bold text-sm mt-0.5">${fmtDt(latest.data)}${latest.objetivo ? ' · ' + latest.objetivo : ''}</p>
+                    </div>
+                    ${list.length > 1 ? `<span class="text-[10px] bg-pu/10 text-pu2 px-2.5 py-1 rounded-lg font-bold">${list.length} avaliações</span>` : ''}
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    ${card('Peso', latest.peso, ' kg', 'peso')}
+                    ${card('Gordura', latest.gordura_pct, '%', 'gordura_pct', 'text-orange-400')}
+                    ${card('M. Magra', latest.massa_magra, ' kg', 'massa_magra', 'text-pu2')}
+                    ${card('Músculo', latest.massa_muscular, ' kg', 'massa_muscular', 'text-emerald-400')}
+                    ${card('G. Visceral', latest.gordura_visceral != null ? 'Nv ' + latest.gordura_visceral : null, '', 'gordura_visceral', 'text-yellow-400')}
+                    ${card('Água', latest.agua_pct, '%', 'agua_pct', 'text-blue-400')}
+                    ${card('IMC', latest.imc, '', 'imc')}
+                    ${card('Met. Basal', latest.metabolismo_basal, ' kcal', 'metabolismo_basal')}
+                    ${card('Idade Met.', latest.idade_metabolica, ' anos', 'idade_metabolica')}
+                </div>
+                ${latest.obs ? `<p class="mt-3 text-xs text-mt/70 italic bg-s3/30 border border-bd/20 rounded-xl px-3 py-2.5 leading-relaxed">${latest.obs}</p>` : ''}
+                ${prev ? `<p class="mt-3 text-[10px] text-mt/50 text-center">Variações em relação a ${fmtDt(prev.data)}</p>` : ''}
+                <a href="avaliacao-pdf.html?aluno_id=${activeAluno.aluno_id}&print=1" target="_blank"
+                   class="mt-4 w-full flex items-center justify-center gap-2 bg-s3/50 hover:bg-s3 border border-bd/30 hover:border-pu/50 rounded-xl py-2.5 text-mt hover:text-white text-xs font-bold transition-all">
+                  <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                  Baixar PDF da Avaliação
+                </a>
+            `;
+
+            const histEl = document.getElementById('av-aluno-history');
+            const histListEl = document.getElementById('av-aluno-history-list');
+            if (list.length > 1) {
+                histEl.classList.remove('hidden');
+                histListEl.innerHTML = list.slice(1).map(av => `
+                    <div class="flex items-center justify-between bg-s3/30 border border-bd/20 rounded-xl px-3 py-2.5">
+                        <span class="text-xs font-bold text-mt">${fmtDt(av.data)}</span>
+                        <div class="flex items-center gap-3">
+                            ${av.peso != null ? `<span class="text-xs text-white font-bold">${av.peso} kg</span>` : ''}
+                            ${av.gordura_pct != null ? `<span class="text-xs text-orange-400 font-bold">${av.gordura_pct}% G</span>` : ''}
+                            ${av.massa_magra != null ? `<span class="text-xs text-pu2 font-bold">${av.massa_magra} kg M</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Toast simples
+        function mostrarToastTreino(msg, tipo) {
+            let t = document.getElementById('toast-treino');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'toast-treino';
+                t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl text-white text-sm font-bold shadow-2xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none';
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl text-white text-sm font-bold shadow-2xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none ${tipo === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                t.classList.remove('opacity-0', 'translate-y-4');
+            }));
+            setTimeout(() => t.classList.add('opacity-0', 'translate-y-4'), 3000);
+        }
+
+// Confirmação de Logout
+        function showLogoutConfirm() {
+            document.getElementById('logout-modal').classList.remove('hidden');
+            document.getElementById('logout-modal').classList.add('flex');
+        }
+        function hideLogoutConfirm() {
+            document.getElementById('logout-modal').classList.add('hidden');
+            document.getElementById('logout-modal').classList.remove('flex');
+        }
+
+// Lidar com o Logout
+        function handleLogout() {
+            const sessao = activeAluno?.sessao;
+            if (sessao) { try { getDb()?.rpc('aluno_logout', { p_sessao: sessao }).then(() => {}, () => {}); } catch(e) {} }
+            localStorage.removeItem('sf-aluno-session');
+            activeAluno = null;
+            workoutData = {};
+
+            document.documentElement.classList.remove('sf-has-session');
+
+            document.getElementById('portal-screen').classList.add('hidden');
+            document.getElementById('portal-screen').classList.remove('flex');
+            document.getElementById('login-screen').classList.remove('hidden');
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
+            resetBtn();
+        }
+    </script>
+    <script>
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('sf-theme', next);
+            _syncTreinoThemeIcon(next);
+        }
+        function _syncTreinoThemeIcon(theme) {
+            const isDark = theme === 'dark';
+            // Ícone da linha (sol no escuro, lua no claro)
+            const rowIcon = document.getElementById('theme-icon-treino');
+            if (rowIcon) rowIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            // Toggle track: roxo=ligado(claro), cinza=desligado(escuro)
+            const track = document.getElementById('theme-toggle-track');
+            if (track) track.style.background = isDark ? '#374151' : '#8b5cf6';
+            // Thumb: direita=claro, esquerda=escuro
+            const thumb = document.getElementById('theme-toggle-thumb');
+            if (thumb) thumb.style.transform = isDark ? 'translateX(0)' : 'translateX(20px)';
+            // Ícone dentro do thumb
+            const thumbIcon = document.getElementById('theme-toggle-icon');
+            if (thumbIcon) {
+                thumbIcon.setAttribute('data-lucide', isDark ? 'moon' : 'sun');
+                thumbIcon.style.color = isDark ? '#374151' : '#8b5cf6';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+        // Sincroniza ícone no carregamento
+        _syncTreinoThemeIcon(localStorage.getItem('sf-theme') || 'dark');
+    </script>
+<script>
+let _swReg = null;
+let _swUpdatePending = false;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      _swReg = reg;
+
+      // Já tem uma atualização esperando (ex: aba reaberta após deploy)
+      if (reg.waiting) _marcarAtualizacaoDisponivel();
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            _marcarAtualizacaoDisponivel();
+          }
+        });
+      });
+    }).catch(() => {});
+  });
+}
+
+function _marcarAtualizacaoDisponivel() {
+  _swUpdatePending = true;
+  const badge = document.getElementById('badge-atualizacao');
+  const icone = document.getElementById('icone-atualizar');
+  if (badge) badge.classList.remove('hidden');
+  if (icone) icone.style.color = '#34d399'; // verde quando há update
+}
+
+async function verificarAtualizacaoApp() {
+  const icone = document.getElementById('icone-atualizar');
+
+  // Se há update de código pendente, aplica e recarrega
+  if (_swUpdatePending) {
+    mostrarToastTreino('Aplicando atualização...', 'success');
+    if (_swReg?.waiting) _swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    setTimeout(() => window.location.reload(), 900);
+    return;
+  }
+
+  // Gira o ícone durante a sincronização
+  if (icone) icone.style.animation = 'spin 1s linear infinite';
+
+  // 1. Sincroniza dados do treino com o Supabase
+  let treinoAtualizado = false;
+  try {
+    const db = getDb();
+    if (db && activeAluno?.sessao) {
+      const { data: latest } = await db.rpc('aluno_treino', { p_sessao: activeAluno.sessao });
+      if (latest && latest.exercicios !== undefined) {
+        const anteriorStr = JSON.stringify(workoutData);
+        let exs = latest.exercicios;
+        if (typeof exs === 'string') { try { exs = JSON.parse(exs); } catch(e) { exs = {}; } }
+        exs = exs || {};
+        if (JSON.stringify(exs) !== anteriorStr) {
+          workoutData = exs;
+          treinoAtualizado = true;
+          activeAluno.exercicios = exs;
+          activeAluno.id = latest.id;
+          activeAluno.updated_at = latest.updated_at;
+          localStorage.setItem('sf-aluno-session', JSON.stringify(activeAluno));
+          renderCalendarioSemanal();
+          renderExercises();
+        }
+      }
+    }
+  } catch(e) {}
+
+  // 2. Verifica update de código do SW em paralelo
+  if (_swReg) _swReg.update().catch(() => {});
+
+  // Para o giro e exibe resultado
+  setTimeout(() => {
+    if (icone) icone.style.animation = '';
+    if (_swUpdatePending) return; // banner de update vai aparecer
+    mostrarToastTreino(
+      treinoAtualizado ? 'Treino atualizado com sucesso!' : 'Tudo atualizado.',
+      'success'
+    );
+  }, 1200);
+}
+
+/* ── Alarmes de Suplementos ── */
+(function() {
+    var STORAGE_KEY = 'sf-alarmes';
+    var FIRED_KEY   = 'sf-alarmes-fired';
+    var SUPPS = [
+        { key:'creatina', title:'Creatina 💪',    body:'Hora de tomar sua creatina!',  tag:'alarme-creatina' },
+        { key:'whey',     title:'Whey Protein 🥤', body:'Hora de tomar seu whey!',     tag:'alarme-whey'     },
+    ];
+
+function carregarDados() {
+        try {
+            var raw = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            ['creatina','whey'].forEach(function(k) {
+                if (!raw[k]) raw[k] = { active:false, times:[] };
+                if (!Array.isArray(raw[k].times)) raw[k].times = [];
+            });
+            return raw;
+        } catch(e) { return { creatina:{active:false,times:[]}, whey:{active:false,times:[]} }; }
+    }
+
+    function carregarFired() {
+        try {
+            var today = new Date().toDateString();
+            var raw = JSON.parse(localStorage.getItem(FIRED_KEY)) || {};
+            if (raw.day !== today) return { day:today, keys:[] };
+            return raw;
+        } catch(e) { return { day:new Date().toDateString(), keys:[] }; }
+    }
+
+    function hasFired(k) { return carregarFired().keys.indexOf(k) !== -1; }
+    function markFired(k) {
+        var f = carregarFired();
+        if (f.keys.indexOf(k) === -1) f.keys.push(k);
+        localStorage.setItem(FIRED_KEY, JSON.stringify(f));
+    }
+
+    function renderTimes(supp, times) {
+        var c = document.getElementById('alarme-' + supp + '-times');
+        if (!c) return;
+        if (!times || !times.length) { c.innerHTML = '<p class="text-xs text-mt/50 italic py-1">Nenhum horário configurado</p>'; return; }
+        c.innerHTML = times.map(function(t, i) {
+            return '<div class="flex items-center gap-2">' +
+                '<input type="time" value="' + t + '" onchange="alarmesSalvar()" class="bg-s3 border border-bd rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-pu transition-all">' +
+                '<button onclick="alarmeRemoveTime(\'' + supp + '\',' + i + ')" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transition-all text-xs">×</button>' +
+            '</div>';
+        }).join('');
+    }
+
+    function atualizarStatus() {
+        var d = carregarDados();
+        var dot = document.getElementById('alarme-status-dot');
+        var txt = document.getElementById('alarme-status-txt');
+        if (!dot || !txt) return;
+        var ativo = (d.creatina.active && d.creatina.times.length) || (d.whey.active && d.whey.times.length);
+        dot.style.background = ativo ? '#4ade80' : '';
+        dot.className = 'w-2 h-2 rounded-full flex-shrink-0 ' + (ativo ? 'bg-emerald-400' : 'bg-bd');
+        if (ativo) {
+            var parts = [];
+            if (d.creatina.active) d.creatina.times.forEach(function(t){ parts.push('Creatina ' + t); });
+            if (d.whey.active) d.whey.times.forEach(function(t){ parts.push('Whey ' + t); });
+            txt.textContent = 'Ativos: ' + parts.join(', ');
+        } else {
+            txt.textContent = 'Nenhum alarme ativo.';
+        }
+    }
+
+    function atualizarPermBanner() {
+        var b = document.getElementById('alarme-perm-banner');
+        if (!b) return;
+        if (!('Notification' in window)) {
+            b.className = 'flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-white';
+            b.innerHTML = '<span>⚠️</span><span>Notificações não suportadas neste navegador.</span>';
+            return;
+        }
+        if (Notification.permission === 'granted') {
+            b.className = 'flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-white';
+            b.innerHTML = '<span>✅</span><span>Notificações ativas. Alarmes prontos!</span>';
+        } else if (Notification.permission === 'denied') {
+            b.className = 'flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-white';
+            b.innerHTML = '<span>🚫</span><span class="flex-1">Notificações bloqueadas. Vá em <strong>Configurações do celular → Aplicativos → Studio Focus → Notificações</strong> e ative.</span>';
+        } else {
+            b.className = 'flex items-center gap-2.5 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-xs text-white';
+            b.innerHTML = '<span>🔔</span><span class="flex-1">Permita notificações para receber os alarmes.</span><button onclick="alarmePermitir()" class="bg-pu text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex-shrink-0">Permitir</button>';
+        }
+    }
+
+    window.abrirAlarmes = function() {
+        var modal = document.getElementById('modal-alarmes');
+        if (!modal) return;
+        var d = carregarDados();
+        var tc = document.getElementById('alarme-creatina-toggle');
+        var tw = document.getElementById('alarme-whey-toggle');
+        if (tc) tc.checked = !!d.creatina.active;
+        if (tw) tw.checked = !!d.whey.active;
+        renderTimes('creatina', d.creatina.times);
+        renderTimes('whey', d.whey.times);
+        atualizarPermBanner();
+        atualizarStatus();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.fecharAlarmes = function() {
+        var modal = document.getElementById('modal-alarmes');
+        if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    };
+
+    window.alarmePermitir = function() {
+        if (!('Notification' in window)) {
+            mostrarToastTreino('Notificações não suportadas neste navegador.', 'error');
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            mostrarToastTreino('Notificações bloqueadas. Ative nas configurações do celular → Studio Focus.', 'error');
+            atualizarPermBanner();
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            atualizarPermBanner();
+            _pushRetries = 0;
+            syncPushSubscription();
+            return;
+        }
+
+        // Chama API nativa diretamente no contexto do gesto do usuário
+        Notification.requestPermission().then(function(result) {
+            atualizarPermBanner();
+            if (result === 'granted') {
+                try { window.OneSignal && OneSignal.User.PushSubscription.optIn(); } catch(e) {}
+                mostrarToastTreino('Notificações ativadas!', 'success');
+                _pushRetries = 0;
+                syncPushSubscription();
+            } else {
+                mostrarToastTreino('Permissão não concedida. Tente nas configurações do celular.', 'error');
+            }
+        });
+    };
+
+    window.alarmesSalvar = function() {
+        var config = document.getElementById('alarme-config');
+        if (!config || config.classList.contains('hidden')) { atualizarStatus(); return; }
+        var tc = document.getElementById('alarme-creatina-toggle');
+        var tw = document.getElementById('alarme-whey-toggle');
+        var getTimes = function(supp) {
+            var c = document.getElementById('alarme-' + supp + '-times');
+            if (!c) return [];
+            return Array.from(c.querySelectorAll('input[type="time"]')).map(function(el){ return el.value; }).filter(Boolean);
+        };
+        var d = {
+            creatina: { active: tc ? !!tc.checked : false, times: getTimes('creatina') },
+            whey:     { active: tw ? !!tw.checked : false, times: getTimes('whey') },
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+        atualizarStatus();
+        alarmeSyncSW();
+    };
+
+    window.alarmeAddTime = function(supp) {
+        var d = carregarDados();
+        d[supp].times.push('08:00');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+        renderTimes(supp, d[supp].times);
+        atualizarStatus();
+    };
+
+    window.alarmeRemoveTime = function(supp, idx) {
+        var d = carregarDados();
+        d[supp].times.splice(idx, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+        renderTimes(supp, d[supp].times);
+        atualizarStatus();
+    };
+
+    function dispararAlarme(title, body, tag) {
+        // Síntese de voz — não depende de permissão de notificação
+        if ('speechSynthesis' in window) {
+            try {
+                var u = new SpeechSynthesisUtterance(title.replace(/[💪🥤]/g, ''));
+                u.lang = 'pt-BR'; u.rate = 0.85; u.volume = 1;
+                speechSynthesis.cancel(); speechSynthesis.speak(u);
+            } catch(e) {}
+        }
+
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+        var opts = { body: body, icon: '../img/image.png', tag: tag, renotify: true, requireInteraction: true, vibrate: [200,100,200] };
+
+        // Usa serviceWorker.ready → registration.showNotification()
+        // Mais confiável que .controller (pode ser null na primeira carga)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(function(reg) {
+                return reg.showNotification(title, opts);
+            }).catch(function() {
+                try { new Notification(title, opts); } catch(e) {}
+            });
+        } else {
+            try { new Notification(title, opts); } catch(e) {}
+        }
+    }
+
+    function verificarAlarmes() {
+        var d = carregarDados();
+        var now = new Date();
+        var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+        SUPPS.forEach(function(s) {
+            var info = d[s.key];
+            if (!info || !info.active || !info.times.length) return;
+            info.times.forEach(function(t) {
+                if (t !== timeStr) return;
+                var k = now.toDateString() + '|' + s.key + '|' + t;
+                if (hasFired(k)) return;
+                markFired(k);
+                dispararAlarme(s.title, s.body, s.tag);
+            });
+        });
+    }
+
+    var _pushRetries = 0;
+
+    function construirListaAlarmes() {
+        var d = carregarDados(); var alarms = [];
+        SUPPS.forEach(function(s) {
+            var info = d[s.key];
+            if (!info || !info.active || !info.times.length) return;
+            info.times.forEach(function(t) { alarms.push({ time:t, title:s.title, body:s.body, tag:s.tag }); });
+        });
+        return alarms;
+    }
+
+    function atualizarPushStatus(estado, msg) {
+        var el  = document.getElementById('alarme-push-status');
+        var ico = document.getElementById('alarme-push-icon');
+        var txt = document.getElementById('alarme-push-txt');
+        var btn = document.getElementById('alarme-test-btn');
+        if (!el) return;
+        var icons = { syncing:'🔄', ok:'☁️ ✅', error:'⚠️', off:'📴' };
+        var cores = { syncing:'bg-blue-500/10 border-blue-500/20', ok:'bg-emerald-500/10 border-emerald-500/20', error:'bg-red-500/10 border-red-500/20', off:'bg-s3 border-bd/40' };
+        el.className = 'flex items-center gap-2.5 p-3 rounded-xl text-xs text-white border ' + (cores[estado] || cores.off);
+        if (ico) ico.textContent = icons[estado] || '📴';
+        if (txt) txt.textContent = msg;
+        if (btn) btn.classList.toggle('hidden', estado !== 'ok');
+        el.classList.remove('hidden');
+    }
+
+    var _currentOnesignalId = null;
+    // URL do Cloudflare Worker de alarmes (deploy: workers/wrangler-alarms.toml)
+    var ALARMS_WORKER_URL = 'https://studio-focus-alarms.the130programacion.workers.dev';
+
+    window.alarmeTestar = async function() {
+        if (!_currentOnesignalId) { mostrarToastTreino('Aguarde a sincronização concluir.', 'error'); return; }
+        var btn = document.getElementById('alarme-test-btn');
+        if (btn) { btn.textContent = '...'; btn.disabled = true; }
+        try {
+            // Teste direto: dispara via SW local (não precisa do servidor)
+            if ('serviceWorker' in navigator) {
+                var reg = await navigator.serviceWorker.ready;
+                await reg.showNotification('Teste Studio Focus 🔔', {
+                    body: 'Push funcionando corretamente!',
+                    icon: '../img/image.png',
+                    tag: 'sf-teste',
+                });
+                mostrarToastTreino('Notificação de teste enviada!', 'success');
+            } else {
+                mostrarToastTreino('Service Worker não disponível.', 'error');
+            }
+        } catch(e) {
+            mostrarToastTreino('Erro ao enviar teste.', 'error');
+        }
+        if (btn) { btn.textContent = 'Testar'; btn.disabled = false; }
+    };
+
+    async function syncPushSubscription() {
+        var alarms = construirListaAlarmes();
+
+        // Sincroniza com SW local (Periodic Sync / background check)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(function(reg) {
+                if (reg.active) reg.active.postMessage({ type:'SCHEDULE_ALARMS', alarms:alarms });
+                if (alarms.length && reg.periodicSync) {
+                    reg.periodicSync.register('sf-check-alarms', { minInterval: 60000 }).catch(function(){});
+                }
+            }).catch(function(){});
+        }
+
+        // Sincroniza com Worker (push garantido mesmo app fechado)
+        if (!window.OneSignal) {
+            atualizarPushStatus('off', 'Carregando sistema de push...');
+            if (_pushRetries < 8) {
+                _pushRetries++;
+                setTimeout(syncPushSubscription, 2000);
+            }
+            return;
+        }
+
+        if (Notification.permission !== 'granted') {
+            atualizarPushStatus('off', 'Permita notificações para ativar o push em background.');
+            return;
+        }
+
+        // Garante opt-in ativo antes de tentar obter o ID
+        try { await OneSignal.User.PushSubscription.optIn(); } catch(e) {}
+
+        var onesignalId = null;
+        try { onesignalId = await OneSignal.User.getOnesignalId(); } catch(e) {}
+        if (!onesignalId) {
+            try { onesignalId = OneSignal.User.PushSubscription?.id; } catch(e) {}
+        }
+        if (!onesignalId) {
+            atualizarPushStatus('off', 'Aguardando registro de push... (abra e feche o app se persistir)');
+            if (_pushRetries < 12) { _pushRetries++; setTimeout(syncPushSubscription, 3000); }
+            return;
+        }
+
+        _currentOnesignalId = onesignalId;
+
+        // Sistema único de alarmes: Cloudflare Worker (workers/alarms.js), o mesmo do site público
+        var syncReq = function(lista) {
+            return fetch(ALARMS_WORKER_URL + '/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ onesignalId: onesignalId, alarms: lista }),
+            });
+        };
+
+        if (!alarms.length) {
+            atualizarPushStatus('off', 'Nenhum alarme ativo.');
+            syncReq([]).catch(function(){});
+            return;
+        }
+
+        atualizarPushStatus('syncing', 'Sincronizando alarmes...');
+        try {
+            var resp = await syncReq(alarms);
+            var out = resp.ok ? await resp.json().catch(function(){ return null; }) : null;
+            if (out && out.ok) {
+                atualizarPushStatus('ok', alarms.length + ' alarme(s) agendado(s) — push ativo!');
+            } else {
+                throw new Error('HTTP ' + resp.status);
+            }
+        } catch(e) {
+            atualizarPushStatus('error', 'Erro ao sincronizar. Verifique a conexão.');
+        }
+    }
+
+    // Envolve as funções de salvar para chamar sync após cada mudança
+    var _origSalvar = window.alarmesSalvar;
+    var _origAdd    = window.alarmeAddTime;
+    var _origRemove = window.alarmeRemoveTime;
+    window.alarmesSalvar    = function()     { _origSalvar();    _pushRetries=0; syncPushSubscription(); };
+    window.alarmeAddTime    = function(s)    { _origAdd(s);      _pushRetries=0; syncPushSubscription(); };
+    window.alarmeRemoveTime = function(s,i)  { _origRemove(s,i); _pushRetries=0; syncPushSubscription(); };
+
+    // Sincroniza ao carregar e ao voltar ao primeiro plano
+    setInterval(verificarAlarmes, 10000);
+    syncPushSubscription();
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) { verificarAlarmes(); _pushRetries=0; syncPushSubscription(); }
+    });
+})();
+</script>
+
+<!-- MODAL CONFIRMAÇÃO DE SAÍDA -->
+<div id="logout-modal" class="hidden fixed inset-0 z-[9998] items-center justify-center p-4" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+    <div class="glass rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl" style="border:1px solid rgba(239,68,68,0.2);">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="log-out" class="w-5 h-5 text-red-400"></i>
+        </div>
+        <h3 class="font-bebas text-xl tracking-wide text-white mb-1">Deseja sair?</h3>
+        <p class="text-sm text-mt mb-6">Você precisará fazer login novamente para acessar seus treinos.</p>
+        <div class="flex gap-3">
+            <button onclick="hideLogoutConfirm()" class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-bd text-mt hover:bg-bd/80 transition-colors">Não</button>
+            <button onclick="hideLogoutConfirm(); handleLogout();" class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500/90 text-white hover:bg-red-500 transition-colors">Sim, sair</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

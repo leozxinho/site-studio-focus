@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin | Studio Focus</title>
+    <link rel="icon" href="../img/icon-192.png">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,17 +30,17 @@
 
     <div class="w-full max-w-md animate-fade">
         <div class="text-center mb-8">
-            <h1 class="font-bebas text-5xl tracking-widest text-white">STUDIO <span class="text-pu">FOCUS</span></h1>
+            <img src="../img/image.png" alt="Studio Focus Logo" class="h-20 mx-auto object-contain">
             <p class="text-mt text-sm uppercase tracking-widest mt-2">Painel Administrativo</p>
         </div>
 
         <div class="glass p-8 rounded-2xl login-card">
             <form id="login-form" class="space-y-6">
                 <div>
-                    <label for="username" class="block text-xs font-bold text-mt uppercase tracking-widest mb-2">Usuário</label>
-                    <input type="text" id="username" required 
+                    <label for="username" class="block text-xs font-bold text-mt uppercase tracking-widest mb-2">E-mail</label>
+                    <input type="email" id="username" required 
                         class="w-full bg-s1 border border-bd2 rounded-xl px-4 py-3 text-white outline-none input-focus transition-all"
-                        placeholder="admin">
+                        placeholder="admin@studiofocus.com">
                 </div>
                 <div>
                     <label for="password" class="block text-xs font-bold text-mt uppercase tracking-widest mb-2">Senha</label>
@@ -64,17 +65,18 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="admin.js"></script>
     <script>
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = document.getElementById('username').value;
+            const email = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-message');
 
-            if (login(user, pass)) {
-                // Success - logic handled in admin.js
-            } else {
+            const erro = await login(email, pass);
+            if (erro) {
+                errorMsg.textContent = erro;
                 errorMsg.classList.remove('hidden');
                 setTimeout(() => {
                     errorMsg.classList.add('hidden');

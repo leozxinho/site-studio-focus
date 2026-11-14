@@ -1,10 +1,13 @@
 {
-  "name": "studio-focus-api",
+  "name": "studio-focus",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "dependencies": {
-    "ioredis": "^5.10.1",
-    "web-push": "^3.6.7"
+  "scripts": {
+    "css": "tailwindcss -c tailwind.config.cjs -i admin/tailwind.input.css -o admin/tailwind.css --minify",
+    "css:watch": "tailwindcss -c tailwind.config.cjs -i admin/tailwind.input.css -o admin/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
   }
 }

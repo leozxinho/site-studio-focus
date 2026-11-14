@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação Física | Studio Focus</title>
+<link rel="icon" href="../img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  background: #030d1a;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Toolbar (oculta no print) ── */
+#toolbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 52px;
+  background: #020810;
+  border-bottom: 1px solid rgba(0,212,184,.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  gap: 12px;
+}
+#toolbar a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #5a6a88;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color .2s;
+}
+#toolbar a:hover { color: white; }
+#btn-print {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #00d4b8;
+  color: #030d1a;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .02em;
+}
+#btn-print:hover { background: #00ffe9; transform: scale(1.02); }
+
+/* ── Content area ── */
+#content {
+  padding: 68px 16px 32px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Loading / Empty states ── */
+#state-loading, #state-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 12px;
+  color: #5a6a88;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #0d2040;
+  border-top-color: #00d4b8;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PDF Card ── */
+.pdf-card {
+  background: #030d1a;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+/* ── Print ── */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+  html, body { background: #030d1a !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+  #toolbar { display: none !important; }
+  #content { padding: 0 !important; max-width: 100% !important; width: 100% !important; margin: 0 !important; }
+  #state-loading, #state-empty { display: none !important; }
+  .pdf-card { width: 100% !important; border-radius: 0 !important; page-break-inside: avoid; break-inside: avoid; }
+  .pdf-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+  @page { margin: 8mm 10mm; size: A4 portrait; }
+}
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <a href="index.html">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Voltar
+  </a>
+  <button id="btn-print" onclick="window.print()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h14a2 2 0 012 2v10M3 17a2 2 0 002 2h14a2 2 0 002-2"/></svg>
+    Baixar PDF
+  </button>
+</div>
+
+<!-- Content -->
+<div id="content">
+  <div id="state-loading">
+    <div class="spinner"></div>
+    <p style="font-size:13px">Carregando avaliação...</p>
+  </div>
+  <div id="state-empty" style="display:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:.3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    <p style="font-size:14px;font-weight:700">Nenhuma avaliação encontrada</p>
+    <p style="font-size:12px;margin-top:4px">Realize sua avaliação física no Studio Focus.</p>
+  </div>
+  <div id="pdf-output"></div>
+</div>
+
+<script>
+const SUPABASE_URL     = 'https://dvjjproexhetqlazftln.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2ampwcm9leGhldHFsYXpmdGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzEwNzUsImV4cCI6MjA5NDI0NzA3NX0._Y22KalUdIzT6TzalVR2haBsUvXeeyBeC_cpwPOTKNk';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const p       = new URLSearchParams(location.search);
+  const alunoId = p.get('aluno_id');
+  const autoPrint = p.get('print') === '1';
+
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Aluno logado: usa a sessão do portal (RPC). Admin logado: leitura direta (RLS authenticated).
+  let alunoSessao = null;
+  try { alunoSessao = JSON.parse(localStorage.getItem('sf-aluno-session') || 'null')?.sessao || null; } catch (e) {}
+
+  let nome = 'Aluno';
+  let fichas = null;
+  if (alunoSessao) {
+    const { data: res } = await db.rpc('aluno_avaliacoes', { p_sessao: alunoSessao });
+    nome   = res?.aluno_nome || nome;
+    fichas = res?.fichas?.slice(0, 1) || null;
+  } else if (alunoId) {
+    const [{ data: alunoRows }, { data: rows }] = await Promise.all([
+      db.from('alunos').select('nome').eq('id', alunoId).limit(1),
+      db.from('fichas_avaliacao').select('id, data, dados')
+        .eq('aluno_id', alunoId)
+        .order('data', { ascending: false })
+        .limit(1),
+    ]);
+    nome   = alunoRows?.[0]?.nome || nome;
+    fichas = rows;
+  }
+
+  document.getElementById('state-loading').style.display = 'none';
+
+  if (!fichas || fichas.length === 0) { showEmpty(); return; }
+
+  const ficha  = fichas[0];
+  const dados  = ficha.dados || {};
+  const dataFmt = ficha.data
+    ? new Date(ficha.data + 'T00:00:00').toLocaleDateString('pt-BR')
+    : '';
+
+  document.getElementById('pdf-output').innerHTML = buildPDF(nome, dataFmt, dados);
+
+  if (autoPrint) setTimeout(() => window.print(), 400);
+});
+
+function showEmpty() {
+  document.getElementById('state-loading').style.display = 'none';
+  document.getElementById('state-empty').style.display   = 'flex';
+}
+
+// ── IMC classification ─────────────────────────────────────────────────
+function imcInfo(v) {
+  if (!v || v <= 0) return { label: '-', color: '#5a6a88' };
+  if (v < 18.5) return { label: 'Abaixo do Peso', color: '#3b82f6' };
+  if (v < 25)   return { label: 'Normal',          color: '#00d4b8' };
+  if (v < 30)   return { label: 'Sobrepeso',        color: '#f59e0b' };
+  if (v < 35)   return { label: 'Obesidade I',      color: '#f97316' };
+  if (v < 40)   return { label: 'Obesidade II',     color: '#ef4444' };
+  return              { label: 'Obesidade III',      color: '#dc2626' };
+}
+
+// ── Circular SVG Gauge (270° arc) ─────────────────────────────────────
+function gauge(value, maxVal, color, label, unit, sub) {
+  const R    = 40;
+  const circ = 2 * Math.PI * R;   // 251.327
+  const arc  = circ * 0.75;       // 188.495  (270°)
+  const pct  = value > 0 ? Math.min(value / maxVal, 1) : 0;
+  const fill = pct * arc;
+  const disp = value > 0
+    ? (Number.isInteger(+value) ? +value : (+value).toFixed(1))
+    : '--';
+
+  return `
+  <div style="text-align:center;min-width:110px">
+    <svg viewBox="0 0 100 100" style="width:120px;height:120px;display:block;margin:0 auto">
+      <circle cx="50" cy="50" r="${R}" fill="none" stroke="#0d2040" stroke-width="9"
+        stroke-dasharray="${arc.toFixed(2)} ${(circ - arc).toFixed(2)}"
+        transform="rotate(135 50 50)" stroke-linecap="round"/>
+      ${value > 0 ? `
+      <circle cx="50" cy="50" r="${R}" fill="none" stroke="${color}" stroke-width="9"
+        stroke-dasharray="${fill.toFixed(2)} ${(circ - fill).toFixed(2)}"
+        transform="rotate(135 50 50)" stroke-linecap="round"
+        style="filter:drop-shadow(0 0 6px ${color}80)"/>` : ''}
+      <text x="50" y="45" text-anchor="middle" dominant-baseline="middle"
+        font-size="17" font-weight="800" fill="white"
+        font-family="DM Sans, sans-serif">${disp}</text>
+      <text x="50" y="61" text-anchor="middle" dominant-baseline="middle"
+        font-size="9" font-weight="700" fill="${color}"
+        font-family="DM Sans, sans-serif">${unit}</text>
+    </svg>
+    <p style="color:#8a8a9e;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:2px">${label}</p>
+    ${sub ? `<p style="color:${color};font-size:10px;font-weight:800;margin-top:2px">${sub}</p>` : ''}
+  </div>`;
+}
+
+// ── Rounded Progress Bar ───────────────────────────────────────────────
+function bar(label, val, total, color) {
+  if (!total || !val || val <= 0) return '';
+  const pct = Math.min((val / total) * 100, 100);
+  return `
+  <div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+      <span style="font-size:11px;color:#8a8a9e;font-weight:700;text-transform:uppercase;letter-spacing:.05em">${label}</span>
+      <span style="font-size:12px;color:white;font-weight:800">${(+val).toFixed(1)} kg
+        <span style="color:${color}"> ${pct.toFixed(1)}%</span>
+      </span>
+    </div>
+    <div style="background:#0d2040;border-radius:999px;height:9px;overflow:hidden">
+      <div style="background:${color};width:${pct.toFixed(1)}%;height:9px;border-radius:999px"></div>
+    </div>
+  </div>`;
+}
+
+// ── Pill ───────────────────────────────────────────────────────────────
+function pill(label, value, color) {
+  if (!value || +value <= 0) return '';
+  return `<span style="background:#0d2040;border:1px solid ${color}40;border-radius:999px;
+    padding:6px 14px;font-size:12px;font-weight:700;color:white;white-space:nowrap">
+    <span style="color:${color}">${label}</span> ${value}
+  </span>`;
+}
+
+// ── IMC reference cards ────────────────────────────────────────────────
+function imcCards(imcVal) {
+  const ranges = [
+    { label:'Abaixo do Peso', range:'< 18.5',      min:0,   max:18.5, color:'#3b82f6' },
+    { label:'Normal',         range:'18.5 – 24.9', min:18.5,max:25,   color:'#00d4b8' },
+    { label:'Sobrepeso',      range:'25 – 29.9',   min:25,  max:30,   color:'#f59e0b' },
+    { label:'Obesidade I',    range:'30 – 34.9',   min:30,  max:35,   color:'#f97316' },
+    { label:'Obesidade II',   range:'35 – 39.9',   min:35,  max:40,   color:'#ef4444' },
+    { label:'Obesidade III',  range:'≥ 40',         min:40,  max:999,  color:'#dc2626' },
+  ];
+  return ranges.map(r => {
+    const active = imcVal > 0 && imcVal >= r.min && imcVal < r.max;
+    return `<div style="background:${active ? r.color + '22' : '#0d2040'};
+      border:2px solid ${active ? r.color : 'rgba(255,255,255,.06)'};
+      border-radius:12px;padding:10px 6px;text-align:center;
+      ${active ? 'box-shadow:0 0 14px ' + r.color + '40;' : ''}">
+      ${active
+        ? `<div style="width:7px;height:7px;background:${r.color};border-radius:50%;margin:0 auto 5px"></div>`
+        : '<div style="height:12px"></div>'}
+      <p style="color:${active ? r.color : '#3d4f6a'};font-size:9px;font-weight:800;
+        text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${r.label}</p>
+      <p style="color:${active ? 'white' : '#3d4f6a'};font-size:10px;font-weight:700">${r.range}</p>
+    </div>`;
+  }).join('');
+}
+
+// ── Main PDF builder ──────────────────────────────────────────────────
+function buildPDF(nome, dataFmt, d) {
+  const n = k => parseFloat(d[k] || 0);
+
+  const peso          = n('bio-peso') || n('imc-peso');
+  const gordPct       = n('bio-gordura-pct');
+  const aguaPct       = n('bio-agua');
+  const imcVal        = n('bio-imc');
+  const massaMagra    = n('bio-massa-magra');
+  const massaMuscular = n('bio-massa-muscular');
+  const massaOssea    = n('bio-massa-ossea');
+  const gordKg        = n('bio-gordura-kg');
+  const tmb           = n('bio-tmb');
+  const visceral      = n('bio-visceral');
+  const idadeMet      = n('bio-idade-met');
+
+  const { label: imcLabel, color: imcColor } = imcInfo(imcVal);
+  const gordColor = gordPct > 0
+    ? (gordPct < 18 ? '#10b981' : gordPct < 28 ? '#f59e0b' : '#ef4444')
+    : '#00d4b8';
+
+  const hasGauges = peso > 0 || gordPct > 0 || aguaPct > 0 || imcVal > 0;
+  const hasBars   = peso > 0 && (massaMagra > 0 || gordKg > 0);
+  const hasPills  = tmb > 0 || visceral > 0 || idadeMet > 0;
+  const hasImc    = imcVal > 0;
+
+  const pillsHtml = [
+    pill('TMB',        tmb        > 0 ? tmb.toFixed(0) + ' kcal' : '', '#00d4b8'),
+    pill('Visceral',   visceral   > 0 ? 'Nv ' + visceral         : '', '#f97316'),
+    pill('Idade Met.', idadeMet   > 0 ? idadeMet + ' anos'       : '', '#a78bfa'),
+  ].filter(Boolean).join('');
+
+  return `
+  <div class="pdf-card">
+
+    <!-- ── Header ───────────────────────────────────────────────────── -->
+    <div class="pdf-section" style="position:relative;background:linear-gradient(135deg,#030d1a 0%,#051828 70%);
+      padding:20px 24px;border-bottom:1px solid rgba(0,212,184,.15);overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;
+        background:linear-gradient(90deg,#00d4b8,#0066ff,#00d4b8)"></div>
+      <div style="position:absolute;top:-80px;right:-60px;width:240px;height:240px;
+        background:radial-gradient(circle,rgba(0,212,184,.07) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+            letter-spacing:.12em;margin-bottom:5px">Studio Focus · Ficha de Avaliação Física</p>
+          <h1 style="color:white;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px">${nome}</h1>
+          <p style="color:#5a6a88;font-size:12px;margin:0">${dataFmt || 'Sem data'}</p>
+        </div>
+        <div style="background:rgba(0,212,184,.1);border:1px solid rgba(0,212,184,.2);
+          border-radius:10px;padding:8px 14px;text-align:right;flex-shrink:0">
+          <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+            letter-spacing:.05em;margin:0">Bioimpedância</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Gauges ────────────────────────────────────────────────────── -->
+    ${hasGauges ? `
+    <div class="pdf-section" style="background:#040f1e;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.05)">
+      <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+        letter-spacing:.12em;margin:0 0 20px">Métricas Principais</p>
+      <div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:12px">
+        ${gauge(peso,    150,      '#00d4b8',  'Peso',      'kg', '')}
+        ${gauge(gordPct, 50,       gordColor,  'Gordura',   '%',  '')}
+        ${gauge(aguaPct, 80,       '#3b82f6',  'Água',      '%',  '')}
+        ${gauge(imcVal,  40,       imcColor,   'IMC',       '',   imcLabel)}
+      </div>
+    </div>` : ''}
+
+    <!-- ── Composição + Extras ───────────────────────────────────────── -->
+    <div class="pdf-section" style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(255,255,255,.05)">
+
+      <!-- Barras -->
+      <div style="padding:18px 24px;border-right:1px solid rgba(255,255,255,.05)">
+        ${hasBars ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+          letter-spacing:.12em;margin:0 0 18px">Composição Corporal</p>
+        ${bar('Massa Magra',    massaMagra,    peso, '#00d4b8')}
+        ${bar('Gordura',        gordKg,        peso, '#f97316')}
+        ${bar('Massa Muscular', massaMuscular, peso, '#10b981')}
+        ${bar('Massa Óssea',    massaOssea,    peso, '#8b5cf6')}
+        ` : ''}
+      </div>
+
+      <!-- Pills + IMC -->
+      <div style="padding:18px 24px">
+        ${hasPills ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+          letter-spacing:.12em;margin:0 0 14px">Dados Adicionais</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">${pillsHtml}</div>
+        ` : ''}
+        ${hasImc ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;
+          letter-spacing:.12em;margin:0 0 12px">Classificação IMC</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          ${imcCards(imcVal)}
+        </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- ── Footer ────────────────────────────────────────────────────── -->
+    <div class="pdf-section" style="background:linear-gradient(135deg,#020b16,#040f1e);padding:14px 24px;
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <p style="color:#00d4b8;font-size:12px;font-weight:800;letter-spacing:.08em;
+          text-transform:uppercase;margin:0">Studio Focus</p>
+        <p style="color:#2d3f56;font-size:10px;margin:2px 0 0">Avaliação Física Profissional</p>
+      </div>
+      <div style="text-align:right">
+        <p style="color:#2d3f56;font-size:10px;margin:0 0 8px">
+          Gerado em ${new Date().toLocaleDateString('pt-BR')}
+        </p>
+        <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:8px">
+          <p style="color:#2d3f56;font-size:10px;margin:0">
+            Responsável: ______________________________
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,10 +1,11 @@
-const CACHE_NAME = 'studio-focus-v6';
+// OneSignal: deve ser o primeiro import do SW para registrar push subscriptions
+importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+
+const CACHE_NAME = 'studio-focus-v13';
 const STATIC_ASSETS = [
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './chat-widget.css',
-  './chat-widget.js'
+  './img/icon-192.png',
+  './img/icon-512.png'
 ];
 
 const _SW_ALARMS_URL  = '/__sw_alarms__';
@@ -14,8 +15,8 @@ const _SW_FIRED_URL   = '/__sw_fired__';
 function showAlarmNotification(title, body, tag) {
   return self.registration.showNotification(title, {
     body,
-    icon:     './icon-192.png',
-    badge:    './icon-192.png',
+    icon:     './img/icon-192.png',
+    badge:    './img/icon-192.png',
     tag,
     renotify: true,
     requireInteraction: true,   // Não auto-dismiss: fica visível até o usuário interagir
@@ -87,7 +88,7 @@ async function checkAndFireAlarms(alarms) {
 }
 
 // ── Recebe alarmes da página e persiste (sem setTimeout) ─────────────────────
-// NOTA: setTimeout de horas NÃO funciona em SW — o SO mata o SW após segundos
+// NOTA: setTimeout de horas NÃO funciona em SW - o SO mata o SW após segundos
 // de inatividade. A persistência serve apenas para o periodic sync e push.
 function receiveAlarms(alarms) {
   persistAlarms(alarms);
@@ -115,19 +116,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ── Fetch (network-first para index.html, cache-first para assets) ───────────
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+// Estratégia:
+//   • Arquivos de app (HTML, JS, CSS, JSON de dados) → network-first
+//     Sempre busca a versão mais recente na rede; usa cache só se offline.
+//   • Assets estáticos puros (imagens, webp, fontes) → cache-first
+//     Imagens não mudam com frequência; cache acelera o carregamento.
+//   • Requisições externas (Supabase, CDN, Fonts) → passa direto sem cache.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Ignora URLs internas usadas para persistência
+  // Ignora URLs internas de persistência do SW
   if (url.pathname === _SW_ALARMS_URL || url.pathname === _SW_FIRED_URL) return;
 
-  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
+  // Requisições externas: sem cache, deixa o navegador resolver normalmente
+  if (url.origin !== self.location.origin) return;
+
+  // Arquivos de app que mudam com frequência → network-first
+  const isAppFile = /\.(html|js|css|json)$/i.test(url.pathname)
+    || url.pathname.endsWith('/')
+    || url.pathname === '/';
+
+  if (isAppFile) {
     event.respondWith(
       fetch(event.request)
         .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+          }
           return res;
         })
         .catch(() => caches.match(event.request))
@@ -135,12 +152,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Assets estáticos (imagens, webp, ícones) → cache-first
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
       return fetch(event.request).then((res) => {
-        if (res.ok && url.origin === self.location.origin) {
-          caches.open(CACHE_NAME).then((c) => c.put(event.request, res.clone()));
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
         }
         return res;
       });
@@ -168,32 +187,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// ── Push do servidor (Web Push API) — PRINCIPAL MECANISMO ────────────────────
-// Este é o método confiável: o servidor Vercel envia push via web-push,
-// o SO acorda o SW mesmo com app fechado e celular bloqueado.
-self.addEventListener('push', (event) => {
-  console.log('[SW] 🔔 Push recebido:', event.data ? event.data.text() : 'sem dados');
-  let data = { title: 'Studio Focus', body: 'Lembrete de suplemento!', tag: 'alarm', icon: './icon-192.png' };
-  try { data = { ...data, ...event.data.json() }; } catch(e) {}
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body:     data.body,
-      icon:     data.icon || './icon-192.png',
-      badge:    './icon-192.png',
-      tag:      data.tag || 'alarm',
-      renotify: true,
-      requireInteraction: true,   // Permanece visível até o usuário tocar
-      vibrate:  [200, 100, 200, 100, 200],
-      actions: [
-        { action: 'open', title: '📱 Abrir App' },
-        { action: 'dismiss', title: '✓ OK' }
-      ]
-    })
-  );
-});
-
-// ── Periodic Background Sync (Chrome/Android — complementar) ─────────────────
+// ── Periodic Background Sync (Chrome/Android - complementar) ─────────────────
 self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'check-alarms') {
     event.waitUntil(

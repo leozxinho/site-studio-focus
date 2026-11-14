@@ -1,16 +1,25 @@
-node_modules/
-.git/
-.vercel/
-.env*
+# Arquivos que NÃO devem ser publicados como assets (wrangler.jsonc → assets.directory = ".")
+# Sintaxe igual à do .gitignore
+
+# Config / tooling
+.assetsignore
+.wrangler/
+wrangler.jsonc
 package.json
 package-lock.json
-wrangler.jsonc
-*.py
-tests/
-api/
-docs/
-scratch/
-README.md
-CRON_SETUP.md
-bugs.md
-txt.txt
+node_modules/
+tailwind.config.cjs
+admin/tailwind.input.css
+.env*
+
+# Código de servidor / workers / scripts
+workers/
+supabase/
+
+# Documentação
+readme.md
+*.md
+
+
+# Prints e rascunhos
+image copy*.png

@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de Avaliação | Studio Focus</title>
+<link rel="icon" href="../img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>(function(){var t=localStorage.getItem('sf-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="stylesheet" href="admin.css">
+<style>
+/* ─── Tabs ─── */
+.tab-btn { transition: all .2s; }
+.tab-btn.active { background: var(--pu); color:#fff; border-color:var(--pu); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ─── Form ─── */
+.fg { margin-bottom: 14px; }
+.fl { display:block; font-size:10px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--mt); margin-bottom:4px; }
+input[type=number], input[type=text], input[type=date], input[type=file], select, textarea {
+  background:var(--s2); border:1px solid var(--bd2); border-radius:8px;
+  padding:7px 11px; color:var(--tx); font-size:13px; width:100%; outline:none;
+  transition: border-color .2s, box-shadow .2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color:var(--pu); box-shadow:0 0 0 2px var(--pu-glow);
+}
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.grid4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; }
+.sh { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.07em;
+      color:var(--mt); border-bottom:1px solid var(--bd2); padding-bottom:8px; margin-bottom:16px; }
+
+/* ─── PAR-Q ─── */
+.parq-item { background:var(--s2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+.parq-obs { display:none; margin-top:10px; }
+.parq-obs.show { display:block; }
+.radio-row { display:flex; gap:20px; margin-top:8px; }
+.radio-row label { display:flex; align-items:center; gap:6px; font-size:13px;
+                   color:var(--tx); cursor:pointer; text-transform:none; letter-spacing:0; font-weight:500; }
+
+/* ─── SVG body ─── */
+.sv-region { transition: fill .25s, filter .25s; }
+.sv-region.filled { filter: drop-shadow(0 0 5px var(--pu-glow)); }
+.sv-val { font-size:8.5px; font-weight:700; font-family:'DM Sans',sans-serif; fill:#fff; pointer-events:none; }
+.sv-lbl { font-size:8px; font-weight:600; font-family:'DM Sans',sans-serif; fill:var(--mt); pointer-events:none; }
+
+/* ─── Calc cards ─── */
+.calc-box { background:var(--s2); border:1px solid var(--bd2); border-radius:12px; padding:16px; }
+.badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:11px; font-weight:800; }
+.badge-low    { background:#10b98120; color:#10b981; }
+.badge-ok     { background:#0066ff20; color:var(--pu2); }
+.badge-warn   { background:#f9731620; color:#f97316; }
+.badge-danger { background:#ef444420; color:#ef4444; }
+
+/* ─── Method buttons ─── */
+.met-btn { padding:8px 18px; border-radius:8px; font-weight:700; font-size:13px;
+           border:1px solid var(--bd2); cursor:pointer; transition:all .2s; color:var(--mt); }
+.met-btn.active { background:var(--pu); color:#fff; border-color:var(--pu); }
+
+/* ─── Zone rows ─── */
+.zone-row { display:flex; align-items:center; gap:8px; padding:6px 10px;
+            background:var(--s3); border-radius:8px; font-size:12px; }
+.zone-color { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-thumb { background:var(--s3); border-radius:6px; }
+
+/* ─── Print / PDF ─── */
+@media print {
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  html, body { background:#030d1a !important; height:auto !important; overflow:visible !important; }
+  header, #tab-nav, #btn-sv-ficha, #btn-pdf, #toast-f,
+  button, .met-btn, .tab-btn { display:none !important; }
+  #tab-content { overflow:visible !important; height:auto !important; padding:0 !important; background:transparent !important; }
+  .tab-panel { display:none !important; }
+  #tab-9 { display:block !important; }
+  @page { margin: 0; size: A4; }
+}
+</style>
+</head>
+<body style="height:100vh;overflow:hidden;display:flex;flex-direction:column">
+
+<!-- HEADER -->
+<header style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+               padding:12px 20px;border-bottom:1px solid var(--bd2);background:var(--s1);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html#avaliacoes" style="display:flex;align-items:center;gap:6px;color:var(--mt);
+       text-decoration:none;font-size:13px;font-weight:600;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--mt)'">
+      <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Voltar
+    </a>
+    <div style="width:1px;height:24px;background:var(--bd2)"></div>
+    <img src="../img/image.png" alt="Logo" style="height:28px;object-fit:contain">
+    <strong style="color:var(--tx);font-size:15px">Ficha de Avaliação Física</strong>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="fl" style="margin:0;white-space:nowrap">Aluno:</span>
+      <select id="ficha-aluno-id" onchange="carregarFicha()" style="min-width:180px;padding:5px 10px">
+        <option value="">Selecione...</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="fl" style="margin:0">Data:</span>
+      <input type="date" id="ficha-data" style="min-width:140px;padding:5px 10px">
+    </div>
+    <button onclick="salvarFicha()" id="btn-sv-ficha"
+            style="display:flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;
+                   background:var(--pu);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer">
+      <i data-lucide="save" style="width:15px;height:15px"></i> Salvar Ficha
+    </button>
+    <button onclick="exportarPDF()" id="btn-pdf"
+            style="display:flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;
+                   background:var(--s3);color:var(--tx);font-weight:700;font-size:13px;border:1px solid var(--bd2);cursor:pointer">
+      <i data-lucide="file-down" style="width:15px;height:15px"></i> Exportar PDF
+    </button>
+  </div>
+</header>
+
+<!-- TAB NAV -->
+<nav id="tab-nav" style="flex-shrink:0;display:flex;gap:4px;padding:8px 20px;
+     border-bottom:1px solid var(--bd2);background:var(--s1);overflow-x:auto">
+</nav>
+
+<!-- CONTENT -->
+<main id="tab-content" style="flex:1;overflow-y:auto;padding:24px;background:var(--bg)">
+</main>
+
+<!-- Toast -->
+<div id="toast-f" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);
+     z-index:500;padding:10px 22px;border-radius:10px;color:#fff;font-size:13px;font-weight:700;
+     box-shadow:0 4px 20px rgba(0,0,0,.4);opacity:0;transition:all .3s;pointer-events:none"></div>
+
+<script>
+const SUPA_URL = 'https://dvjjproexhetqlazftln.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2ampwcm9leGhldHFsYXpmdGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzEwNzUsImV4cCI6MjA5NDI0NzA3NX0._Y22KalUdIzT6TzalVR2haBsUvXeeyBeC_cpwPOTKNk';
+let db, fichaId = null, dadosFicha = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+  db = supabase.createClient(SUPA_URL, SUPA_KEY);
+  document.getElementById('ficha-data').value = new Date().toISOString().split('T')[0];
+  buildTabs();
+  popularAlunos();
+  const p = new URLSearchParams(location.search);
+  if (p.get('aluno_id')) {
+    document.getElementById('ficha-aluno-id').value = p.get('aluno_id');
+    carregarFicha();
+  }
+  if (window.lucide) lucide.createIcons();
+});
+
+// ═══════════════════════════ TABS ═══════════════════════════
+const TABS = [
+  { id:1, label:'1. Anamnese' },    { id:2, label:'2. PAR-Q' },
+  { id:3, label:'3. Medidas' },     { id:4, label:'4. Composição' },
+  { id:5, label:'5. IMC / IAC' },   { id:6, label:'6. RCQ' },
+  { id:7, label:'7. Postural' },    { id:8, label:'8. Cardio' },
+  { id:9, label:'Resultado Visual' },
+];
+let activeTab = 1;
+function buildTabs() {
+  const nav = document.getElementById('tab-nav');
+  nav.innerHTML = TABS.map(t => `<button onclick="mudarAba(${t.id})" id="tab-btn-${t.id}"
+    class="tab-btn${t.id===1?' active':''}"
+    style="white-space:nowrap;padding:7px 14px;border-radius:8px;border:1px solid var(--bd2);
+           font-size:12px;font-weight:700;cursor:pointer;${t.id===1?'':'color:var(--mt)'}"
+    >${t.label}</button>`).join('');
+  renderAllPanels();
+}
+function mudarAba(n) {
+  activeTab = n;
+  TABS.forEach(t => {
+    const b = document.getElementById(`tab-btn-${t.id}`);
+    if (t.id===n) { b.classList.add('active'); b.style.color=''; }
+    else { b.classList.remove('active'); b.style.color='var(--mt)'; }
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${n}`)?.classList.add('active');
+}
+
+// ═══════════════════════════ RENDER PANELS ═══════════════════════════
+function renderAllPanels() {
+  const c = document.getElementById('tab-content');
+  c.innerHTML = `
+    ${panel1()}${panel2()}${panel3()}${panel4()}${panel5()}${panel6()}${panel7()}${panel8()}${panel9()}
+  `;
+  buildParqQuestions();
+  atualizarCamposDobras();
+  atualizarCamposCardio();
+  if (window.lucide) lucide.createIcons();
+}
+
+// ─── TAB 1: ANAMNESE ───────────────────────────────────────────────────
+function panel1() { return `
+<div id="tab-1" class="tab-panel active" style="max-width:760px;margin:0 auto">
+  <div class="sh">Anamnese - Histórico de Saúde e Estilo de Vida</div>
+  <div class="fg">
+    <label class="fl">1. Objetivos com a atividade física</label>
+    <textarea id="an-objetivos" rows="2" placeholder="Descreva os objetivos..."></textarea>
+  </div>
+  <div class="grid2">
+    <div class="fg"><label class="fl">2. Pratica atividade física atualmente?</label>
+      <select id="an-pratica"><option value="">-</option><option>Sim</option><option>Não</option></select>
+    </div>
+    <div class="fg"><label class="fl">Quais e há quanto tempo?</label>
+      <input type="text" id="an-pratica-desc" placeholder="Ex: Caminhada, 6 meses">
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="fg"><label class="fl">3. Acompanhamento nutricional?</label>
+      <select id="an-nutri">
+        <option value="">-</option>
+        <option>Sim - Nutricionista</option>
+        <option>Sim - Nutricionista Esportivo</option>
+        <option>Não</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">4. Média de horas de sono</label>
+      <select id="an-sono">
+        <option value="">-</option><option>Menos de 5h</option><option>5–6h</option>
+        <option>6–7h</option><option>7–8h</option><option>Mais de 8h</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">5. Medicamento de uso contínuo (qual?)</label>
+    <input type="text" id="an-medicamento" placeholder="Se não utiliza, deixe em branco">
+  </div>
+  <div class="fg"><label class="fl">6. Cirurgia nos últimos 6 meses (qual?)</label>
+    <input type="text" id="an-cirurgia" placeholder="Se não, deixe em branco">
+  </div>
+  <div class="fg"><label class="fl">7. Restrição ou recomendação médica para exercícios</label>
+    <textarea id="an-restricao" rows="2" placeholder="Descreva qualquer restrição médica..."></textarea>
+  </div>
+  <div class="fg"><label class="fl">8. Possui diabetes ou outra doença? (qual?)</label>
+    <input type="text" id="an-doenca" placeholder="Ex: Diabetes Tipo 2, Hipertensão - se não, deixe em branco">
+  </div>
+</div>`; }
+
+// ─── TAB 2: PAR-Q ─────────────────────────────────────────────────────
+const PARQ_QS = [
+  'Algum médico já disse que você possui algum problema de coração e que só deveria realizar atividade física supervisionada?',
+  'Você sente dor no peito quando pratica atividade física?',
+  'No último mês, você sentiu dor no peito quando não estava praticando atividade física?',
+  'Você perdeu o equilíbrio por causa de tontura ou alguma vez perdeu a consciência?',
+  'Você tem algum problema ósseo ou articular que poderia ser piorado pela prática de atividade física?',
+  'Seu médico já recomendou o uso de medicamento para sua pressão arterial ou condição cardiovascular?',
+  'Você conhece alguma outra razão pela qual você não deveria praticar atividade física?',
+];
+function panel2() { return `
+<div id="tab-2" class="tab-panel" style="max-width:760px;margin:0 auto">
+  <div class="sh">PAR-Q - Questionário de Prontidão para Atividade Física</div>
+  <p style="font-size:12px;color:var(--mt);margin-bottom:16px">Qualquer resposta "Sim" pode indicar necessidade de avaliação médica antes de iniciar exercícios.</p>
+  <div id="parq-list" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>`; }
+
+function buildParqQuestions() {
+  const el = document.getElementById('parq-list');
+  if (!el) return;
+  el.innerHTML = PARQ_QS.map((q, i) => `
+  <div class="parq-item">
+    <p style="font-size:13px;color:var(--tx);font-weight:500">${i+1}. ${q}</p>
+    <div class="radio-row">
+      <label><input type="radio" name="parq-${i}" value="Não" checked onchange="parqToggle(${i})"> Não</label>
+      <label><input type="radio" name="parq-${i}" value="Sim" onchange="parqToggle(${i})"> Sim</label>
+    </div>
+    <div class="parq-obs" id="parq-obs-${i}">
+      <label class="fl">Observação</label>
+      <input type="text" id="parq-txt-${i}" placeholder="Descreva...">
+    </div>
+  </div>`).join('');
+}
+function parqToggle(i) {
+  const val = document.querySelector(`input[name="parq-${i}"]:checked`)?.value;
+  document.getElementById(`parq-obs-${i}`)?.classList.toggle('show', val === 'Sim');
+}
+
+// ─── TAB 3: MEDIDAS ────────────────────────────────────────────────────
+function panel3() { return `
+<div id="tab-3" class="tab-panel">
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:28px;align-items:start">
+    <!-- Fields -->
+    <div>
+      <div class="sh">Circunferências (cm)</div>
+      <div class="fg"><label class="fl">Pescoço</label><input type="number" step=".1" id="med-pescoco" oninput="svUpdate()" placeholder="cm"></div>
+      <div class="fg"><label class="fl">Ombro</label><input type="number" step=".1" id="med-ombro" oninput="svUpdate()" placeholder="cm"></div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Tórax Relaxado D</label><input type="number" step=".1" id="med-tor-rd" oninput="svUpdate()" placeholder="cm"></div>
+        <div class="fg"><label class="fl">Tórax Relaxado E</label><input type="number" step=".1" id="med-tor-re" oninput="svUpdate()" placeholder="cm"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Tórax Inspirado D</label><input type="number" step=".1" id="med-tor-id" oninput="svUpdate()" placeholder="cm"></div>
+        <div class="fg"><label class="fl">Tórax Inspirado E</label><input type="number" step=".1" id="med-tor-ie" oninput="svUpdate()" placeholder="cm"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Braço D (cm)</label><input type="number" step=".1" id="med-braco-d" oninput="svUpdate()" placeholder="cm"></div>
+        <div class="fg"><label class="fl">Braço E (cm)</label><input type="number" step=".1" id="med-braco-e" oninput="svUpdate()" placeholder="cm"></div>
+      </div>
+      <div class="fg"><label class="fl">Cintura</label><input type="number" step=".1" id="med-cintura" oninput="svUpdate()" placeholder="cm"></div>
+      <div class="fg"><label class="fl">Abdômen</label><input type="number" step=".1" id="med-abdomen" oninput="svUpdate()" placeholder="cm"></div>
+      <div class="fg"><label class="fl">Quadril</label><input type="number" step=".1" id="med-quadril" oninput="svUpdate()" placeholder="cm"></div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Coxa D (cm)</label><input type="number" step=".1" id="med-coxa-d" oninput="svUpdate()" placeholder="cm"></div>
+        <div class="fg"><label class="fl">Coxa E (cm)</label><input type="number" step=".1" id="med-coxa-e" oninput="svUpdate()" placeholder="cm"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Panturrilha D (cm)</label><input type="number" step=".1" id="med-pant-d" oninput="svUpdate()" placeholder="cm"></div>
+        <div class="fg"><label class="fl">Panturrilha E (cm)</label><input type="number" step=".1" id="med-pant-e" oninput="svUpdate()" placeholder="cm"></div>
+      </div>
+    </div>
+    <!-- SVG Body -->
+    <div style="position:sticky;top:0">
+      <div class="sh">Mapeamento Corporal</div>
+      ${svgBody()}
+    </div>
+  </div>
+</div>`; }
+
+function svgBody() {
+  const bg = '#0a1a2e', def = '#0d2040', stroke = 'rgba(255,255,255,.12)';
+  return `
+<svg id="body-svg" viewBox="0 0 260 530" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;display:block;margin:0 auto;border-radius:12px;background:${bg}">
+  <!-- Head -->
+  <ellipse cx="130" cy="32" rx="22" ry="25" fill="${def}" stroke="${stroke}" stroke-width="1.5"/>
+  <ellipse cx="123" cy="31" rx="5" ry="6" fill="rgba(0,0,0,.25)"/>
+  <ellipse cx="137" cy="31" rx="5" ry="6" fill="rgba(0,0,0,.25)"/>
+  <path d="M124 41 Q130 45 136 41" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Neck -->
+  <rect id="sv-pescoco" class="sv-region" x="118" y="57" width="24" height="19" rx="4" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-pescoco" class="sv-val" x="130" y="67" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="70" y="67" class="sv-lbl" text-anchor="end">Pescoço</text>
+  <line x1="72" y1="67" x2="117" y2="67" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Shoulders -->
+  <path id="sv-ombro" class="sv-region" fill="${def}" stroke="${stroke}" stroke-width="1.2"
+    d="M88 76 Q62 72 50 85 Q44 98 68 106 Q84 110 102 106 L102 76 Z
+       M172 76 Q198 72 210 85 Q216 98 192 106 Q176 110 158 106 L158 76 Z
+       M102 74 L158 74 Q164 76 164 84 L164 106 L96 106 L96 84 Q96 76 102 74 Z"/>
+  <text id="sv-lbl-ombro" class="sv-val" x="130" y="92" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="222" y="92" class="sv-lbl">Ombro</text>
+  <line x1="220" y1="92" x2="166" y2="92" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Right arm (model right = viewer left) -->
+  <rect id="sv-braco-d" class="sv-region" x="54" y="106" width="30" height="80" rx="10" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-braco-d" class="sv-val" x="69" y="146" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="146" class="sv-lbl" text-anchor="end">D</text>
+  <!-- Left arm (model left = viewer right) -->
+  <rect id="sv-braco-e" class="sv-region" x="176" y="106" width="30" height="80" rx="10" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-braco-e" class="sv-val" x="191" y="146" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="212" y="146" class="sv-lbl">E</text>
+  <text x="222" y="139" class="sv-lbl">Braço</text>
+  <line x1="220" y1="143" x2="207" y2="146" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Tórax -->
+  <rect id="sv-torax" class="sv-region" x="96" y="76" width="68" height="68" rx="4" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-torax" class="sv-val" x="130" y="110" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="95" class="sv-lbl" text-anchor="end">Tórax</text>
+  <line x1="50" y1="95" x2="95" y2="100" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Cintura -->
+  <rect id="sv-cintura" class="sv-region" x="100" y="144" width="60" height="24" rx="4" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-cintura" class="sv-val" x="130" y="156" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="156" class="sv-lbl" text-anchor="end">Cintura</text>
+  <line x1="50" y1="156" x2="99" y2="156" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Abdômen -->
+  <rect id="sv-abdomen" class="sv-region" x="96" y="168" width="68" height="32" rx="4" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-abdomen" class="sv-val" x="130" y="184" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="184" class="sv-lbl" text-anchor="end">Abdômen</text>
+  <line x1="50" y1="184" x2="95" y2="184" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Quadril -->
+  <rect id="sv-quadril" class="sv-region" x="88" y="200" width="84" height="36" rx="6" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-quadril" class="sv-val" x="130" y="218" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="218" class="sv-lbl" text-anchor="end">Quadril</text>
+  <line x1="50" y1="218" x2="87" y2="218" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Coxa D (viewer left) -->
+  <rect id="sv-coxa-d" class="sv-region" x="90" y="236" width="38" height="100" rx="12" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-coxa-d" class="sv-val" x="109" y="286" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="280" class="sv-lbl" text-anchor="end">Coxa D</text>
+  <line x1="50" y1="280" x2="89" y2="280" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Coxa E (viewer right) -->
+  <rect id="sv-coxa-e" class="sv-region" x="132" y="236" width="38" height="100" rx="12" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-coxa-e" class="sv-val" x="151" y="286" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="222" y="280" class="sv-lbl">Coxa E</text>
+  <line x1="220" y1="280" x2="171" y2="280" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Pant D -->
+  <rect id="sv-pant-d" class="sv-region" x="93" y="344" width="32" height="92" rx="10" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-pant-d" class="sv-val" x="109" y="390" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="48" y="386" class="sv-lbl" text-anchor="end">Pant D</text>
+  <line x1="50" y1="386" x2="92" y2="386" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Pant E -->
+  <rect id="sv-pant-e" class="sv-region" x="135" y="344" width="32" height="92" rx="10" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <text id="sv-lbl-pant-e" class="sv-val" x="151" y="390" text-anchor="middle" dominant-baseline="middle"></text>
+  <text x="222" y="386" class="sv-lbl">Pant E</text>
+  <line x1="220" y1="386" x2="168" y2="386" stroke="rgba(255,255,255,.1)" stroke-width=".8"/>
+  <!-- Feet -->
+  <ellipse cx="109" cy="444" rx="18" ry="8" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+  <ellipse cx="151" cy="444" rx="18" ry="8" fill="${def}" stroke="${stroke}" stroke-width="1.2"/>
+</svg>`; }
+
+const SV_MAP = {
+  'sv-pescoco': ['med-pescoco'],
+  'sv-ombro':   ['med-ombro'],
+  'sv-torax':   ['med-tor-rd','med-tor-re','med-tor-id','med-tor-ie'],
+  'sv-braco-d': ['med-braco-d'],
+  'sv-braco-e': ['med-braco-e'],
+  'sv-cintura': ['med-cintura'],
+  'sv-abdomen': ['med-abdomen'],
+  'sv-quadril': ['med-quadril'],
+  'sv-coxa-d':  ['med-coxa-d'],
+  'sv-coxa-e':  ['med-coxa-e'],
+  'sv-pant-d':  ['med-pant-d'],
+  'sv-pant-e':  ['med-pant-e'],
+};
+function svUpdate() {
+  const pu = getComputedStyle(document.documentElement).getPropertyValue('--pu').trim() || '#0066FF';
+  const def = '#0d2040';
+  Object.entries(SV_MAP).forEach(([svId, fields]) => {
+    const vals = fields.map(f => parseFloat(document.getElementById(f)?.value)||0).filter(v=>v>0);
+    const region = document.getElementById(svId);
+    const lbl = document.getElementById(`sv-lbl-${svId.replace('sv-','')}`);
+    if (!region) return;
+    if (vals.length) {
+      region.setAttribute('fill', pu);
+      if (lbl) lbl.textContent = vals.length === 1 ? vals[0] : vals.join('/');
+    } else {
+      region.setAttribute('fill', def);
+      if (lbl) lbl.textContent = '';
+    }
+  });
+}
+
+// ─── TAB 4: COMPOSIÇÃO CORPORAL ───────────────────────────────────────
+const PROTOCOLS = [
+  { v:'JP7',   l:'Jackson, Pollock e Ward (1978/1980) - 7 dobras' },
+  { v:'JP3',   l:'Jackson, Pollock e Ward (1978/1980) - 3 dobras' },
+  { v:'PT4',   l:'Petroski (1995) - 4 dobras' },
+  { v:'GD3_85',l:'Guedes (1985) - 3 dobras' },
+  { v:'GD3_94',l:'Guedes (1994) - 3 dobras' },
+  { v:'FK4',   l:'Faulkner (1968) - 4 dobras' },
+  { v:'DR4',   l:'Durnin e Rahaman (1967) - 4 dobras' },
+  { v:'LN',    l:'Lean et al. (1996) - 4 dobras' },
+  { v:'TH7',   l:'Thorland (1984) - 7 dobras' },
+  { v:'TH3',   l:'Thorland (1984) - 3 dobras' },
+  { v:'WL',    l:'Weltman et al. (1988) - Pessoas Obesas' },
+];
+const DOBRAS_DEF = {
+  JP7: { all:['peitoral','axilar_media','tricipital','subescapular','abdominal','suprailíaca','coxa'] },
+  JP3: { M:['peitoral','abdominal','coxa'], F:['tricipital','suprailíaca','coxa'] },
+  PT4: { all:['tricipital','subescapular','suprailíaca','panturrilha'] },
+  GD3_85:{ M:['abdominal','suprailíaca','tricipital'], F:['tricipital','suprailíaca','coxa'] },
+  GD3_94:{ M:['peitoral','abdominal','coxa'], F:['tricipital','suprailíaca','coxa'] },
+  FK4:  { all:['tricipital','subescapular','suprailíaca','abdominal'] },
+  DR4:  { all:['bicipital','tricipital','subescapular','suprailíaca'] },
+  LN:   { all:['cintura_cm'] },
+  TH7:  { all:['peitoral','axilar_media','tricipital','subescapular','abdominal','suprailíaca','coxa'] },
+  TH3:  { M:['peitoral','abdominal','coxa'], F:['tricipital','suprailíaca','coxa'] },
+  WL:   { M:['cintura_cm','peso_kg'], F:['cintura_cm','quadril_cm','antebraco_cm','altura_cm'] },
+};
+const DOBRA_LABELS = { peitoral:'Peitoral',axilar_media:'Axilar Média',tricipital:'Tricipital',
+  subescapular:'Subescapular',abdominal:'Abdominal',suprailíaca:'Suprailíaca',coxa:'Coxa',
+  panturrilha:'Panturrilha',bicipital:'Bicipital',cintura_cm:'Cintura (cm)',
+  peso_kg:'Peso (kg)',quadril_cm:'Quadril (cm)',antebraco_cm:'Antebraço (cm)',altura_cm:'Altura (cm)' };
+
+function panel4() { return `
+<div id="tab-4" class="tab-panel" style="max-width:760px;margin:0 auto">
+  <div class="sh">Composição Corporal</div>
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <button class="met-btn active" id="btn-adipo" onclick="setMetodo('adipo')">Adipometria (Dobras)</button>
+    <button class="met-btn" id="btn-bio" onclick="setMetodo('bio')">Bioimpedância</button>
+  </div>
+  <!-- Adipometria -->
+  <div id="panel-adipo">
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="fg"><label class="fl">Sexo *</label>
+        <select id="cc-sexo" onchange="atualizarCamposDobras();calcCompo()">
+          <option value="">-</option><option value="M">Masculino</option><option value="F">Feminino</option>
+        </select></div>
+      <div class="fg"><label class="fl">Idade (anos) *</label>
+        <input type="number" id="cc-idade" oninput="calcCompo()" placeholder="Ex: 30"></div>
+    </div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="fg"><label class="fl">Protocolo</label>
+        <select id="cc-protocolo" onchange="atualizarCamposDobras()">
+          ${PROTOCOLS.map(p=>`<option value="${p.v}">${p.l}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="fl">Peso corporal (kg) - para cálculo de massas</label>
+        <input type="number" step=".1" id="cc-peso" oninput="calcCompo()" placeholder="kg"></div>
+    </div>
+    <div class="sh" style="margin-top:4px">Dobras Cutâneas (mm)</div>
+    <div id="dobras-container" class="grid4" style="margin-bottom:16px"></div>
+    <div id="cc-resultado" style="display:none" class="calc-box">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">
+        <div><p class="fl" style="margin-bottom:4px">% Gordura</p>
+          <p id="cc-pct" style="font-size:28px;font-weight:800;color:var(--pu2)">-</p></div>
+        <div><p class="fl" style="margin-bottom:4px">Massa Gorda</p>
+          <p id="cc-mg" style="font-size:28px;font-weight:800;color:#f97316">-</p></div>
+        <div><p class="fl" style="margin-bottom:4px">Massa Magra</p>
+          <p id="cc-mm" style="font-size:28px;font-weight:800;color:#10b981">-</p></div>
+      </div>
+    </div>
+  </div>
+  <!-- Bioimpedância -->
+  <div id="panel-bio" style="display:none">
+    <div class="grid3">
+      ${[['bio-peso','Peso (kg)','72.5'],['bio-imc','IMC','24.5'],['bio-gordura-pct','Gordura (%)','22.4'],
+         ['bio-gordura-kg','Gordura (kg)','16.1'],['bio-massa-magra','Massa Magra (kg)','56.4'],
+         ['bio-massa-muscular','Músculo (kg)','52.0'],['bio-massa-ossea','Osso (kg)','2.8'],
+         ['bio-visceral','G. Visceral (nível)','7'],['bio-agua','Água (%)','58.3'],
+         ['bio-tmb','Met. Basal (kcal)','1820'],['bio-idade-met','Idade Metabólica','28']]
+        .map(([id,l,ph])=>`<div class="fg"><label class="fl">${l}</label>
+          <input type="number" step=".1" id="${id}" placeholder="${ph}"></div>`).join('')}
+    </div>
+  </div>
+</div>`; }
+
+function setMetodo(m) {
+  document.getElementById('panel-adipo').style.display = m==='adipo'?'block':'none';
+  document.getElementById('panel-bio').style.display   = m==='bio'?'block':'none';
+  document.getElementById('btn-adipo').classList.toggle('active', m==='adipo');
+  document.getElementById('btn-bio').classList.toggle('active', m==='bio');
+}
+
+function atualizarCamposDobras() {
+  const proto = document.getElementById('cc-protocolo')?.value || 'JP7';
+  const sexo  = document.getElementById('cc-sexo')?.value || 'M';
+  const conf  = DOBRAS_DEF[proto];
+  if (!conf) return;
+  const fields = conf.all || conf[sexo] || conf['M'];
+  const cont = document.getElementById('dobras-container');
+  if (!cont) return;
+  cont.innerHTML = fields.map(f => `
+    <div class="fg"><label class="fl">${DOBRA_LABELS[f]||f}</label>
+      <input type="number" step=".1" id="db-${f}" oninput="calcCompo()" placeholder="${f.includes('cm')||f.includes('kg')?'':'mm'}">
+    </div>`).join('');
+}
+
+function calcCompo() {
+  const sexo = document.getElementById('cc-sexo')?.value;
+  const idade = parseFloat(document.getElementById('cc-idade')?.value)||0;
+  const peso = parseFloat(document.getElementById('cc-peso')?.value)||0;
+  const proto = document.getElementById('cc-protocolo')?.value || 'JP7';
+  if (!sexo) return;
+  const conf = DOBRAS_DEF[proto];
+  const fields = conf?.all || conf?.[sexo] || conf?.['M'];
+  if (!fields) return;
+  const vals = fields.map(f => parseFloat(document.getElementById(`db-${f}`)?.value)||0);
+  if (vals.every(v=>v===0)) return;
+  let pct = calcDobras(proto, vals, sexo, idade);
+  if (pct === null || isNaN(pct)) return;
+  pct = Math.max(3, Math.min(60, pct));
+  const res = document.getElementById('cc-resultado');
+  res.style.display = 'block';
+  document.getElementById('cc-pct').textContent = pct.toFixed(1) + '%';
+  if (peso > 0) {
+    const mg = peso * pct / 100;
+    document.getElementById('cc-mg').textContent  = mg.toFixed(1) + ' kg';
+    document.getElementById('cc-mm').textContent  = (peso - mg).toFixed(1) + ' kg';
+  } else {
+    document.getElementById('cc-mg').textContent = '-';
+    document.getElementById('cc-mm').textContent = '-';
+  }
+}
+
+function calcDobras(proto, vals, sexo, idade) {
+  const S = vals.reduce((a,b)=>a+b,0);
+  const log = Math.log10;
+  let D, pct;
+  switch(proto) {
+    case 'JP7':
+      D = sexo==='M' ? 1.112 - 0.00043499*S + 0.00000055*S*S - 0.00028826*idade
+                     : 1.097 - 0.00046971*S + 0.00000056*S*S - 0.00012828*idade;
+      return (495/D) - 450;
+    case 'JP3':
+      D = sexo==='M' ? 1.10938 - 0.0008267*S + 0.0000016*S*S - 0.0002574*idade
+                     : 1.0994921 - 0.0009929*S + 0.0000023*S*S - 0.0001392*idade;
+      return (495/D) - 450;
+    case 'PT4':
+      D = sexo==='M' ? 1.10726863 - 0.00081201*S + 0.00000212*S*S - 0.00041761*idade
+                     : 1.0941625  - 0.00082643*S + 0.0000026*S*S  - 0.0002117*idade;
+      return (495/D) - 450;
+    case 'GD3_85':
+      if (S<=0) return null;
+      D = sexo==='M' ? 1.17136 - 0.06706*log(S) : 1.14580 - 0.06217*log(S);
+      return (495/D) - 450;
+    case 'GD3_94':
+      D = sexo==='M' ? 1.10938 - 0.0008267*S + 0.0000016*S*S - 0.0002574*idade
+                     : 1.09902 - 0.0009929*S + 0.0000023*S*S - 0.0001392*idade;
+      return (495/D) - 450;
+    case 'FK4':
+      return S * 0.153 + 5.783;
+    case 'DR4':
+      if (S<=0) return null;
+      const lS = log(S);
+      if (sexo==='M') {
+        if (idade<27)  D=1.1620-0.0630*lS; else if(idade<40) D=1.1631-0.0632*lS;
+        else if(idade<50) D=1.1422-0.0544*lS; else D=1.1715-0.0779*lS;
+      } else {
+        if (idade<27)  D=1.1549-0.0678*lS; else if(idade<40) D=1.1423-0.0632*lS;
+        else if(idade<50) D=1.1333-0.0612*lS; else D=1.1339-0.0645*lS;
+      }
+      return (495/D) - 450;
+    case 'LN':
+      const cintura=vals[0]||0;
+      return sexo==='M' ? 0.567*cintura + 0.101*idade - 31.8 : 0.439*cintura + 0.221*idade - 9.4;
+    case 'TH7':
+      D = sexo==='M' ? 1.1012 - 0.00040*S - 0.00000267*S*S : 1.0783 - 0.000234*S;
+      return (495/D) - 450;
+    case 'TH3':
+      D = sexo==='M' ? 1.1133 - 0.001187*S : 1.09715 - 0.000863*S;
+      return (495/D) - 450;
+    case 'WL':
+      if (sexo==='M') return 0.31457*(vals[0]||0) - 0.10969*(vals[1]||0) + 10.8336;
+      else return 0.11077*((vals[0]||0)+(vals[1]||0)+(vals[2]||0)) - 0.17666*(vals[3]||0) + 51.03301;
+    default: return null;
+  }
+}
+
+// ─── TAB 5: IMC / IAC ─────────────────────────────────────────────────
+function panel5() { return `
+<div id="tab-5" class="tab-panel" style="max-width:600px;margin:0 auto">
+  <div class="sh">IMC - Índice de Massa Corporal</div>
+  <div class="grid2">
+    <div class="fg"><label class="fl">Peso (kg)</label><input type="number" step=".1" id="imc-peso" oninput="calcIMC()" placeholder="Ex: 72.5"></div>
+    <div class="fg"><label class="fl">Altura (cm)</label><input type="number" step=".1" id="imc-alt" oninput="calcIMC()" placeholder="Ex: 175"></div>
+  </div>
+  <div id="imc-res" style="display:none" class="calc-box" style="margin-bottom:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><p class="fl">IMC Calculado</p><p id="imc-val" style="font-size:32px;font-weight:800;color:var(--tx)">-</p></div>
+      <span id="imc-cls" class="badge"></span>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+  <div class="sh">IAC - Índice de Adiposidade Corporal</div>
+  <div class="grid3">
+    <div class="fg"><label class="fl">Quadril (cm)</label><input type="number" step=".1" id="iac-q" oninput="calcIAC()" placeholder="cm"></div>
+    <div class="fg"><label class="fl">Altura (cm)</label><input type="number" step=".1" id="iac-h" oninput="calcIAC()" placeholder="cm"></div>
+    <div class="fg"><label class="fl">Sexo</label>
+      <select id="iac-s" onchange="calcIAC()"><option value="">-</option><option value="M">Masculino</option><option value="F">Feminino</option></select>
+    </div>
+  </div>
+  <div id="iac-res" style="display:none" class="calc-box">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><p class="fl">IAC = [Quadril ÷ (Altura^1,5)] − 18</p>
+           <p id="iac-val" style="font-size:32px;font-weight:800;color:var(--tx)">-</p></div>
+      <span id="iac-cls" class="badge"></span>
+    </div>
+  </div>
+</div>`; }
+
+function calcIMC() {
+  const p = parseFloat(document.getElementById('imc-peso')?.value)||0;
+  const h = parseFloat(document.getElementById('imc-alt')?.value)||0;
+  if (!p||!h) return;
+  const imc = p / Math.pow(h/100, 2);
+  document.getElementById('imc-res').style.display = 'block';
+  document.getElementById('imc-val').textContent = imc.toFixed(1);
+  const [cls,badge] = imcClass(imc);
+  const el = document.getElementById('imc-cls');
+  el.textContent = cls; el.className = 'badge ' + badge;
+}
+function imcClass(v) {
+  if (v<18.5) return ['Abaixo do peso','badge-low'];
+  if (v<25)   return ['Normal','badge-ok'];
+  if (v<30)   return ['Sobrepeso','badge-warn'];
+  if (v<35)   return ['Obesidade I','badge-danger'];
+  if (v<40)   return ['Obesidade II','badge-danger'];
+  return ['Obesidade III','badge-danger'];
+}
+
+function calcIAC() {
+  const q = parseFloat(document.getElementById('iac-q')?.value)||0;
+  const h = parseFloat(document.getElementById('iac-h')?.value)||0;
+  const s = document.getElementById('iac-s')?.value;
+  if (!q||!h||!s) return;
+  const iac = (q / Math.pow(h/100, 1.5)) - 18;
+  document.getElementById('iac-res').style.display = 'block';
+  document.getElementById('iac-val').textContent = iac.toFixed(1) + '%';
+  const [cls,badge] = iacClass(iac, s);
+  const el = document.getElementById('iac-cls');
+  el.textContent = cls; el.className = 'badge ' + badge;
+}
+function iacClass(v, s) {
+  if (s==='M') {
+    if (v<8)   return ['Muito Magro','badge-low'];
+    if (v<=20) return ['Saudável','badge-ok'];
+    if (v<=25) return ['Excesso de gordura','badge-warn'];
+    return ['Obesidade','badge-danger'];
+  } else {
+    if (v<21)  return ['Muito Magra','badge-low'];
+    if (v<=32) return ['Saudável','badge-ok'];
+    if (v<=38) return ['Excesso de gordura','badge-warn'];
+    return ['Obesidade','badge-danger'];
+  }
+}
+
+function imcClassColor(v) {
+  if (!v || v <= 0) return ['-', '#5a6a88'];
+  if (v < 18.5) return ['Abaixo do Peso', '#3b82f6'];
+  if (v < 25)   return ['Normal',         '#00d4b8'];
+  if (v < 30)   return ['Sobrepeso',      '#f59e0b'];
+  if (v < 35)   return ['Obesidade I',    '#f97316'];
+  if (v < 40)   return ['Obesidade II',   '#ef4444'];
+  return          ['Obesidade III',       '#dc2626'];
+}
+
+// ─── TAB 6: RCQ ────────────────────────────────────────────────────────
+function panel6() { return `
+<div id="tab-6" class="tab-panel" style="max-width:600px;margin:0 auto">
+  <div class="sh">RCQ - Relação Cintura-Quadril</div>
+  <div class="grid3">
+    <div class="fg"><label class="fl">Sexo</label>
+      <select id="rcq-s" onchange="calcRCQ()"><option value="">-</option>
+        <option value="M">Masculino</option><option value="F">Feminino</option></select></div>
+    <div class="fg"><label class="fl">Faixa Etária</label>
+      <select id="rcq-fx" onchange="calcRCQ()">
+        <option value="">-</option><option value="20">20–29</option><option value="30">30–39</option>
+        <option value="40">40–49</option><option value="50">50–59</option><option value="60">60+</option>
+      </select></div>
+    <div></div>
+    <div class="fg"><label class="fl">Cintura (cm)</label><input type="number" step=".1" id="rcq-c" oninput="calcRCQ()" placeholder="cm"></div>
+    <div class="fg"><label class="fl">Quadril (cm)</label><input type="number" step=".1" id="rcq-q" oninput="calcRCQ()" placeholder="cm"></div>
+  </div>
+  <div id="rcq-res" style="display:none" class="calc-box" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><p class="fl">RCQ = Cintura ÷ Quadril</p>
+           <p id="rcq-val" style="font-size:32px;font-weight:800;color:var(--tx)">-</p></div>
+      <span id="rcq-cls" class="badge"></span>
+    </div>
+  </div>
+  <div style="height:16px"></div>
+  <div class="grid2">
+    <div class="fg"><label class="fl">Professor(es) Responsável(is)</label>
+      <input type="text" id="rcq-prof" placeholder="Nome do profissional"></div>
+    <div class="fg"><label class="fl">Observações Gerais</label>
+      <textarea id="rcq-obs" rows="3" placeholder="Observações finais da avaliação..."></textarea></div>
+  </div>
+</div>`; }
+
+const RCQ_TABLE = {
+  M: { '20':[.83,.88,.94], '30':[.84,.89,.95], '40':[.88,.93,.99], '50':[.90,.95,1.00], '60':[.91,.96,1.03] },
+  F: { '20':[.71,.77,.82], '30':[.72,.78,.83], '40':[.73,.79,.85], '50':[.74,.80,.87], '60':[.76,.83,.90] },
+};
+function calcRCQ() {
+  const c = parseFloat(document.getElementById('rcq-c')?.value)||0;
+  const q = parseFloat(document.getElementById('rcq-q')?.value)||0;
+  const s = document.getElementById('rcq-s')?.value;
+  const fx = document.getElementById('rcq-fx')?.value;
+  if (!c||!q||!s) return;
+  const rcq = c/q;
+  document.getElementById('rcq-res').style.display = 'block';
+  document.getElementById('rcq-val').textContent = rcq.toFixed(2);
+  let cls = 'Baixo', badge = 'badge-ok';
+  if (s && fx && RCQ_TABLE[s]?.[fx]) {
+    const [m,h,vh] = RCQ_TABLE[s][fx];
+    if (rcq > vh)    { cls='Muito Alto'; badge='badge-danger'; }
+    else if (rcq > h){ cls='Alto';       badge='badge-warn'; }
+    else if (rcq > m){ cls='Moderado';   badge='badge-warn'; }
+    else             { cls='Baixo';      badge='badge-ok'; }
+  }
+  const el = document.getElementById('rcq-cls');
+  el.textContent = cls; el.className = 'badge ' + badge;
+}
+
+// ─── TAB 7: POSTURAL ──────────────────────────────────────────────────
+function panel7() { return `
+<div id="tab-7" class="tab-panel" style="max-width:760px;margin:0 auto">
+  <div class="sh">Avaliação Postural</div>
+  <div style="display:flex;gap:6px;margin-bottom:20px">
+    ${['Anterior','Posterior','Direita','Esquerda'].map((v,i)=>`
+    <button onclick="setVista('${v.toLowerCase()}')" id="post-btn-${v.toLowerCase()}"
+      class="met-btn${i===0?' active':''}">${v}</button>`).join('')}
+  </div>
+  <div id="post-vista-label" style="font-size:11px;color:var(--mt);margin-bottom:16px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Vista: Anterior</div>
+  <div class="grid2">
+    ${[
+      ['post-cabeca','Cabeça - Posição',['Centralizada','Inclinada à direita','Inclinada à esquerda','Rotacionada à direita','Rotacionada à esquerda','Anteriorizada']],
+      ['post-ombros','Ombros - Nível',['Simétrico','Elevado à direita','Elevado à esquerda','Protrusos (anteriorização bilateral)']],
+      ['post-cervical','Coluna Cervical',['Normal','Hiperlordose cervical','Retificação cervical']],
+      ['post-toracica','Coluna Torácica',['Normal','Hipercifose torácica','Retificação torácica','Escoliose']],
+      ['post-lombar','Coluna Lombar',['Normal','Hiperlordose lombar','Retificação lombar']],
+      ['post-pelve','Pelve',['Neutra','Anteversão pélvica','Retroversão pélvica']],
+      ['post-joelhos','Joelhos',['Normal','Valgo bilateral','Varo bilateral','Hiperextensão','Valgo direito','Valgo esquerdo']],
+      ['post-pes','Pés',['Normal','Pronado bilateral','Supinado bilateral','Plano bilateral','Cavo bilateral','Pronado direito','Pronado esquerdo']],
+    ].map(([id,l,opts])=>`
+    <div class="fg"><label class="fl">${l}</label>
+      <select id="${id}"><option value="">-</option>${opts.map(o=>`<option>${o}</option>`).join('')}</select>
+    </div>`).join('')}
+  </div>
+  <div class="grid2" style="margin-top:8px">
+    <div class="fg"><label class="fl">Observações Posturais</label>
+      <textarea id="post-obs" rows="4" placeholder="Anotações adicionais sobre a postura..."></textarea>
+    </div>
+  </div>
+</div>`; }
+function setVista(v) {
+  ['anterior','posterior','direita','esquerda'].forEach(b => {
+    document.getElementById(`post-btn-${b}`)?.classList.toggle('active', b===v);
+  });
+  document.getElementById('post-vista-label').textContent = `Vista: ${v.charAt(0).toUpperCase()+v.slice(1)}`;
+}
+
+// ─── TAB 8: CARDIO ────────────────────────────────────────────────────
+function panel8() { return `
+<div id="tab-8" class="tab-panel" style="max-width:680px;margin:0 auto">
+  <div class="sh">Avaliação Cardiorrespiratória</div>
+  <div class="grid4" style="margin-bottom:12px">
+    <div class="fg"><label class="fl">FC Repouso (bpm)</label><input type="number" id="cd-fc-rep" oninput="calcCardio()" placeholder="bpm"></div>
+    <div class="fg"><label class="fl">PA Repouso</label><input type="text" id="cd-pa" placeholder="120/80"></div>
+    <div class="fg"><label class="fl">Idade (anos)</label><input type="number" id="cd-idade" oninput="calcCardio()" placeholder="anos"></div>
+    <div class="fg"><label class="fl">Sexo</label>
+      <select id="cd-sexo" onchange="calcCardio()"><option value="">-</option>
+        <option value="M">Masculino</option><option value="F">Feminino</option></select></div>
+  </div>
+  <div id="cd-fcmax-box" style="display:none;margin-bottom:12px" class="calc-box">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div><p class="fl">FCmáx = 220 − Idade</p>
+           <p id="cd-fcmax-val" style="font-size:28px;font-weight:800;color:var(--pu2)">- bpm</p></div>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Protocolo do Teste</label>
+    <select id="cd-proto" onchange="atualizarCamposCardio()">
+      <option value="cooper">Cooper - 12 minutos</option>
+      <option value="harvard">Banco de 3 minutos (Harvard)</option>
+      <option value="milha">Teste de Caminhada de 1 milha</option>
+      <option value="ymca">YMCA Cicloergômetro</option>
+    </select>
+  </div>
+  <div id="cd-cooper-fields">
+    <div class="fg"><label class="fl">Distância percorrida em 12 min (metros)</label>
+      <input type="number" id="cd-cooper-dist" oninput="calcCardio()" placeholder="Ex: 2400"></div>
+  </div>
+  <div id="cd-harvard-fields" style="display:none">
+    <div class="grid3">
+      <div class="fg"><label class="fl">FC - 1 min após (bpm)</label><input type="number" id="cd-harv-1" oninput="calcCardio()" placeholder="bpm"></div>
+      <div class="fg"><label class="fl">FC - 2 min após (bpm)</label><input type="number" id="cd-harv-2" oninput="calcCardio()" placeholder="bpm"></div>
+      <div class="fg"><label class="fl">FC - 3 min após (bpm)</label><input type="number" id="cd-harv-3" oninput="calcCardio()" placeholder="bpm"></div>
+    </div>
+  </div>
+  <div id="cd-milha-fields" style="display:none">
+    <div class="grid3">
+      <div class="fg"><label class="fl">Tempo para 1 milha (min)</label><input type="number" step=".1" id="cd-milha-t" oninput="calcCardio()" placeholder="min"></div>
+      <div class="fg"><label class="fl">FC ao final (bpm)</label><input type="number" id="cd-milha-fc" oninput="calcCardio()" placeholder="bpm"></div>
+      <div class="fg"><label class="fl">Peso (kg)</label><input type="number" step=".1" id="cd-milha-p" oninput="calcCardio()" placeholder="kg"></div>
+    </div>
+  </div>
+  <div id="cd-ymca-fields" style="display:none">
+    <div class="grid2">
+      <div class="fg"><label class="fl">Carga final (Watts)</label><input type="number" id="cd-ymca-w" oninput="calcCardio()" placeholder="W"></div>
+      <div class="fg"><label class="fl">FC steady-state (bpm)</label><input type="number" id="cd-ymca-fc" oninput="calcCardio()" placeholder="bpm"></div>
+    </div>
+  </div>
+  <div id="cd-resultado" style="display:none;margin-top:16px" class="calc-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div><p class="fl">VO₂máx estimado</p>
+           <p id="cd-vo2-val" style="font-size:28px;font-weight:800;color:var(--pu2)">- ml/kg/min</p></div>
+      <div><p class="fl">Classificação</p>
+           <span id="cd-vo2-cls" class="badge" style="margin-top:6px;display:inline-block"></span></div>
+    </div>
+    <p class="fl" style="margin-bottom:8px">Zonas de Treinamento (FC)</p>
+    <div id="cd-zonas" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</div>`; }
+
+// ─── TAB 9: RESULTADO VISUAL ──────────────────────────────────────────
+function panel9() { return `<div id="tab-9" class="tab-panel"><div id="resultado-visual"></div></div>`; }
+
+function renderResultado() {
+  const el = document.getElementById('resultado-visual');
+  if (!el) return;
+  const d = dadosFicha;
+
+  const n = k => parseFloat(d[k] || 0);
+  const peso         = n('bio-peso') || n('cc-peso') || n('imc-peso');
+  const gordPct      = n('bio-gordura-pct');
+  const aguaPct      = n('bio-agua');
+  const imc          = n('bio-imc');
+  const massaMagra   = n('bio-massa-magra');
+  const massaMuscular= n('bio-massa-muscular');
+  const massaOssea   = n('bio-massa-ossea');
+  const gordKg       = n('bio-gordura-kg');
+  const tmb          = n('bio-tmb');
+  const visceral     = n('bio-visceral');
+  const idadeMet     = n('bio-idade-met');
+
+  const alunoEl  = document.getElementById('ficha-aluno-id');
+  const nome     = alunoEl?.options[alunoEl?.selectedIndex]?.text || 'Aluno';
+  const dataVal  = document.getElementById('ficha-data')?.value || '';
+  const dataFmt  = dataVal ? new Date(dataVal + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+
+  const [imcLabel, imcColor] = imcClassColor(imc);
+
+  // ── Circular SVG Gauge (270° arc) ──────────────────────────────────
+  const R = 40, circ = 2 * Math.PI * R;
+  const arc270 = circ * 0.75; // 251.327 * 0.75 = 188.495
+  function gauge(value, maxVal, color, label, unit, sub) {
+    const pct     = value > 0 ? Math.min(value / maxVal, 1) : 0;
+    const fillLen = pct * arc270;
+    const display = value > 0 ? (value % 1 === 0 ? value : value.toFixed(1)) : '--';
+    return `
+    <div style="text-align:center;min-width:110px">
+      <svg viewBox="0 0 100 100" style="width:120px;height:120px;display:block;margin:0 auto">
+        <circle cx="50" cy="50" r="${R}" fill="none" stroke="#0d2040" stroke-width="9"
+          stroke-dasharray="${arc270.toFixed(2)} ${(circ-arc270).toFixed(2)}"
+          transform="rotate(135 50 50)" stroke-linecap="round"/>
+        ${value > 0 ? `<circle cx="50" cy="50" r="${R}" fill="none" stroke="${color}" stroke-width="9"
+          stroke-dasharray="${fillLen.toFixed(2)} ${(circ-fillLen).toFixed(2)}"
+          transform="rotate(135 50 50)" stroke-linecap="round"
+          style="filter:drop-shadow(0 0 6px ${color}80)"/>` : ''}
+        <text x="50" y="45" text-anchor="middle" dominant-baseline="middle"
+          font-size="17" font-weight="800" fill="white" font-family="DM Sans,sans-serif">${display}</text>
+        <text x="50" y="61" text-anchor="middle" dominant-baseline="middle"
+          font-size="9" font-weight="700" fill="${color}" font-family="DM Sans,sans-serif">${unit}</text>
+      </svg>
+      <p style="color:#8a8a9e;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:2px">${label}</p>
+      ${sub ? `<p style="color:${color};font-size:10px;font-weight:800;margin-top:1px">${sub}</p>` : ''}
+    </div>`;
+  }
+
+  // ── Rounded Progress Bar ────────────────────────────────────────────
+  function bar(label, val, total, color) {
+    if (!total || !val || val <= 0) return '';
+    const pct = Math.min((val / total) * 100, 100);
+    return `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;color:#8a8a9e;font-weight:700;text-transform:uppercase;letter-spacing:.05em">${label}</span>
+        <span style="font-size:12px;color:white;font-weight:800">${val.toFixed(1)} kg
+          <span style="color:${color};font-weight:700"> ${pct.toFixed(1)}%</span>
+        </span>
+      </div>
+      <div style="background:#0d2040;border-radius:999px;height:9px;overflow:hidden">
+        <div style="background:${color};width:${pct.toFixed(1)}%;height:9px;border-radius:999px"></div>
+      </div>
+    </div>`;
+  }
+
+  // ── IMC Reference Cards ─────────────────────────────────────────────
+  const IMC_RANGES = [
+    { label:'Abaixo do Peso', range:'< 18.5',     min:0,  max:18.5, color:'#3b82f6' },
+    { label:'Normal',         range:'18.5 – 24.9', min:18.5,max:25, color:'#00d4b8' },
+    { label:'Sobrepeso',      range:'25 – 29.9',  min:25, max:30,   color:'#f59e0b' },
+    { label:'Obesidade I',    range:'30 – 34.9',  min:30, max:35,   color:'#f97316' },
+    { label:'Obesidade II',   range:'35 – 39.9',  min:35, max:40,   color:'#ef4444' },
+    { label:'Obesidade III',  range:'≥ 40',        min:40, max:999,  color:'#dc2626' },
+  ];
+  const imcCards = IMC_RANGES.map(r => {
+    const active = imc > 0 && imc >= r.min && imc < r.max;
+    return `<div style="background:${active ? r.color+'22' : '#0d2040'};border:2px solid ${active ? r.color : 'rgba(255,255,255,0.06)'};
+      border-radius:12px;padding:10px 6px;text-align:center${active ? ';box-shadow:0 0 14px '+r.color+'40' : ''}">
+      ${active ? `<div style="width:7px;height:7px;background:${r.color};border-radius:50%;margin:0 auto 5px"></div>` : '<div style="height:12px"></div>'}
+      <p style="color:${active ? r.color : '#3d4f6a'};font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${r.label}</p>
+      <p style="color:${active ? 'white' : '#3d4f6a'};font-size:10px;font-weight:700">${r.range}</p>
+    </div>`;
+  }).join('');
+
+  // ── Pills ────────────────────────────────────────────────────────────
+  const pills = [
+    tmb > 0       ? `<span style="background:#0d2040;border:1px solid rgba(0,212,184,.25);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:white"><span style="color:#00d4b8">TMB</span> ${tmb.toFixed(0)} kcal</span>` : '',
+    visceral > 0  ? `<span style="background:#0d2040;border:1px solid rgba(249,115,22,.25);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:white"><span style="color:#f97316">Visceral</span> Nv ${visceral}</span>` : '',
+    idadeMet > 0  ? `<span style="background:#0d2040;border:1px solid rgba(167,139,250,.25);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:white"><span style="color:#a78bfa">Idade Met.</span> ${idadeMet} anos</span>` : '',
+  ].filter(Boolean).join('');
+
+  const hasGauges = peso > 0 || gordPct > 0 || aguaPct > 0 || imc > 0;
+  const hasBars   = peso > 0 && (massaMagra > 0 || gordKg > 0);
+
+  el.innerHTML = `
+  <div style="background:#030d1a;border-radius:18px;overflow:hidden;font-family:'DM Sans',sans-serif">
+
+    <!-- ── Header ── -->
+    <div style="position:relative;background:linear-gradient(135deg,#030d1a 0%,#051828 70%);padding:26px 28px;border-bottom:1px solid rgba(0,212,184,.15);overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00d4b8,#0066ff,#00d4b8)"></div>
+      <div style="position:absolute;top:-80px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(0,212,184,.07) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">Studio Focus · Ficha de Avaliação Física</p>
+          <h1 style="color:white;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px">${nome}</h1>
+          <p style="color:#5a6a88;font-size:12px;margin:0">${dataFmt ? dataFmt : 'Sem data'}</p>
+        </div>
+        <div style="background:rgba(0,212,184,.1);border:1px solid rgba(0,212,184,.2);border-radius:10px;padding:8px 14px;text-align:right;flex-shrink:0">
+          <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin:0">Bioimpedância</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Gauges ── -->
+    ${hasGauges ? `
+    <div style="background:#040f1e;padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.05)">
+      <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin:0 0 20px">Métricas Principais</p>
+      <div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:12px">
+        ${gauge(peso,    150, '#00d4b8', 'Peso',      'kg',  '')}
+        ${gauge(gordPct, 50,  gordPct > 0 ? (gordPct < 18 ? '#10b981' : gordPct < 28 ? '#f59e0b' : '#ef4444') : '#00d4b8', 'Gordura', '%', '')}
+        ${gauge(aguaPct, 80,  '#3b82f6', 'Água',      '%',   '')}
+        ${gauge(imc,     40,  imcColor,   'IMC',       '',    imcLabel)}
+      </div>
+    </div>` : ''}
+
+    <!-- ── Composição + Extras ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(255,255,255,.05)">
+
+      <div style="padding:24px 28px;border-right:1px solid rgba(255,255,255,.05)">
+        ${hasBars ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin:0 0 18px">Composição Corporal</p>
+        ${bar('Massa Magra',    massaMagra,    peso, '#00d4b8')}
+        ${bar('Gordura',        gordKg,        peso, '#f97316')}
+        ${bar('Massa Muscular', massaMuscular, peso, '#10b981')}
+        ${bar('Massa Óssea',    massaOssea,    peso, '#8b5cf6')}` : '<div></div>'}
+      </div>
+
+      <div style="padding:24px 28px">
+        ${pills ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin:0 0 14px">Dados Adicionais</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">${pills}</div>` : ''}
+        ${imc > 0 ? `
+        <p style="color:#00d4b8;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin:0 0 12px">Classificação IMC</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${imcCards}</div>` : ''}
+      </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div style="background:linear-gradient(135deg,#020b16,#040f1e);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <p style="color:#00d4b8;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin:0">Studio Focus</p>
+        <p style="color:#2d3f56;font-size:10px;margin:2px 0 0">Avaliação Física Profissional</p>
+      </div>
+      <div style="text-align:right">
+        <p style="color:#2d3f56;font-size:10px;margin:0 0 8px">Documento gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+        <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:8px">
+          <p style="color:#2d3f56;font-size:10px;margin:0">Responsável: ______________________________</p>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function atualizarCamposCardio() {
+  const proto = document.getElementById('cd-proto')?.value || 'cooper';
+  ['cooper','harvard','milha','ymca'].forEach(p => {
+    const el = document.getElementById(`cd-${p}-fields`);
+    if (el) el.style.display = p===proto ? 'block' : 'none';
+  });
+}
+
+function calcCardio() {
+  const idade = parseInt(document.getElementById('cd-idade')?.value)||0;
+  const sexo  = document.getElementById('cd-sexo')?.value;
+  const proto = document.getElementById('cd-proto')?.value || 'cooper';
+  const fcmax = idade > 0 ? 220 - idade : 0;
+  const fcmaxBox = document.getElementById('cd-fcmax-box');
+  if (fcmax > 0) {
+    fcmaxBox.style.display = 'block';
+    document.getElementById('cd-fcmax-val').textContent = fcmax + ' bpm';
+  } else { fcmaxBox.style.display = 'none'; }
+
+  let vo2 = null;
+  if (proto === 'cooper') {
+    const d = parseFloat(document.getElementById('cd-cooper-dist')?.value)||0;
+    if (d>0) vo2 = (d - 504.9) / 44.73;
+  } else if (proto === 'harvard') {
+    const f1 = parseInt(document.getElementById('cd-harv-1')?.value)||0;
+    const f2 = parseInt(document.getElementById('cd-harv-2')?.value)||0;
+    const f3 = parseInt(document.getElementById('cd-harv-3')?.value)||0;
+    if (f1&&f2&&f3) {
+      const pfi = (18000) / (5.5*(f1+f2+f3));
+      vo2 = pfi * 0.35; // approximate conversion
+    }
+  } else if (proto === 'milha') {
+    const t  = parseFloat(document.getElementById('cd-milha-t')?.value)||0;
+    const fc = parseInt(document.getElementById('cd-milha-fc')?.value)||0;
+    const p  = parseFloat(document.getElementById('cd-milha-p')?.value)||0;
+    const gen = sexo==='M'?1:0;
+    if (t&&fc&&p&&sexo)
+      vo2 = 132.853 - 0.0769*(p*2.20462) - 0.3877*idade + 6.315*gen - 3.2649*t - 0.1565*fc;
+  } else if (proto === 'ymca') {
+    const w  = parseFloat(document.getElementById('cd-ymca-w')?.value)||0;
+    const fc = parseInt(document.getElementById('cd-ymca-fc')?.value)||0;
+    if (w&&fc) vo2 = (w * 12 / 75) * (fcmax / fc);
+  }
+
+  if (vo2 === null || isNaN(vo2) || vo2 <= 0) return;
+  vo2 = Math.max(10, Math.min(90, vo2));
+  document.getElementById('cd-resultado').style.display = 'block';
+  document.getElementById('cd-vo2-val').textContent = vo2.toFixed(1) + ' ml/kg/min';
+  const [cls, badge] = vo2Class(vo2, sexo, idade);
+  const clsEl = document.getElementById('cd-vo2-cls');
+  clsEl.textContent = cls; clsEl.className = 'badge ' + badge;
+
+  if (fcmax > 0) {
+    const zones = [
+      { l:'Z1 Recuperação',  pct:'50–60%', c:'#64748b', lo:.50, hi:.60 },
+      { l:'Z2 Aeróbico Leve', pct:'60–70%', c:'#3b82f6', lo:.60, hi:.70 },
+      { l:'Z3 Aeróbico Mod.', pct:'70–80%', c:'#22c55e', lo:.70, hi:.80 },
+      { l:'Z4 Limiar',        pct:'80–85%', c:'#f59e0b', lo:.80, hi:.85 },
+      { l:'Z5 Anaeróbico',    pct:'85–95%', c:'#ef4444', lo:.85, hi:.95 },
+    ];
+    document.getElementById('cd-zonas').innerHTML = zones.map(z => `
+    <div class="zone-row">
+      <div class="zone-color" style="background:${z.c}"></div>
+      <span style="font-weight:700;width:160px;font-size:12px;color:var(--tx)">${z.l}</span>
+      <span style="font-size:11px;color:var(--mt)">${z.pct}</span>
+      <span style="margin-left:auto;font-weight:700;font-size:12px;color:var(--tx)">
+        ${Math.round(fcmax*z.lo)} – ${Math.round(fcmax*z.hi)} bpm
+      </span>
+    </div>`).join('');
+  }
+}
+
+const VO2_M = [
+  [20,[31.5,35.5,42.6,46.5,52.5]],[30,[30.2,33.6,41.0,44.5,50.5]],
+  [40,[28.7,32.3,39.0,43.8,48.1]],[50,[25.1,28.8,35.8,41.0,45.4]],[60,[20.5,26.1,32.3,36.5,44.3]],
+];
+const VO2_F = [
+  [20,[23.6,29.0,37.0,41.1,47.0]],[30,[22.8,27.0,34.0,39.0,45.0]],
+  [40,[21.0,24.5,31.5,35.7,41.0]],[50,[20.2,22.8,30.0,33.0,37.0]],[60,[17.5,20.2,27.1,31.5,35.8]],
+];
+function vo2Class(vo2, sexo, idade) {
+  const table = sexo==='F' ? VO2_F : VO2_M;
+  let row = table[0][1];
+  for (const [minAge, cuts] of table) { if (idade >= minAge) row = cuts; }
+  const labels = ['Muito Fraco','Fraco','Regular','Bom','Excelente','Superior'];
+  const badges = ['badge-danger','badge-danger','badge-warn','badge-ok','badge-ok','badge-ok'];
+  let idx = 5;
+  for (let i=0;i<row.length;i++) { if (vo2 < row[i]) { idx=i; break; } }
+  return [labels[idx], badges[idx]];
+}
+
+// ═══════════════════════════ SUPABASE ═══════════════════════════
+async function popularAlunos() {
+  if (!db) return;
+  const { data } = await db.from('alunos').select('id,nome').eq('status','ATIVO').order('nome');
+  const sel = document.getElementById('ficha-aluno-id');
+  if (sel && data) {
+    data.forEach(a => { const o=document.createElement('option'); o.value=a.id; o.textContent=a.nome; sel.appendChild(o); });
+  }
+  const p = new URLSearchParams(location.search);
+  if (p.get('aluno_id')) {
+    sel.value = p.get('aluno_id');
+    carregarFicha().then(() => {
+      if (p.get('print') === '1') setTimeout(exportarPDF, 600);
+    });
+  }
+}
+
+async function carregarFicha() {
+  const alunoId = document.getElementById('ficha-aluno-id').value;
+  if (!alunoId || !db) return;
+  const data = document.getElementById('ficha-data').value;
+  let q = db.from('fichas_avaliacao').select('*').eq('aluno_id', alunoId).order('data',{ascending:false}).limit(1);
+  if (data) q = db.from('fichas_avaliacao').select('*').eq('aluno_id',alunoId).eq('data',data);
+  const { data: rows } = await q;
+  if (rows && rows.length > 0) {
+    fichaId = rows[0].id;
+    document.getElementById('ficha-data').value = rows[0].data;
+    preencherFicha(rows[0].dados || {});
+  } else {
+    fichaId = null;
+    dadosFicha = {};
+  }
+}
+
+function preencherFicha(d) {
+  dadosFicha = d;
+  const set = (id, v) => { const e=document.getElementById(id); if(e&&v!=null){ if(e.tagName==='SELECT'||e.tagName==='TEXTAREA'||e.tagName==='INPUT') e.value=v; } };
+  // Anamnese
+  ['an-objetivos','an-pratica','an-pratica-desc','an-nutri','an-sono','an-medicamento','an-cirurgia','an-restricao','an-doenca']
+    .forEach(id => set(id, d[id]));
+  // PAR-Q
+  if (d.parq) d.parq.forEach((item,i) => {
+    const r = document.querySelector(`input[name="parq-${i}"][value="${item.resposta}"]`);
+    if (r) { r.checked=true; parqToggle(i); }
+    set(`parq-txt-${i}`, item.obs);
+  });
+  // Medidas
+  ['med-pescoco','med-ombro','med-tor-rd','med-tor-re','med-tor-id','med-tor-ie',
+   'med-braco-d','med-braco-e','med-cintura','med-abdomen','med-quadril',
+   'med-coxa-d','med-coxa-e','med-pant-d','med-pant-e']
+    .forEach(id => set(id, d[id]));
+  svUpdate();
+  // Composição
+  set('cc-sexo',d['cc-sexo']); set('cc-idade',d['cc-idade']); set('cc-protocolo',d['cc-protocolo']); set('cc-peso',d['cc-peso']);
+  if (d['cc-protocolo']) atualizarCamposDobras();
+  if (d.dobras) Object.entries(d.dobras).forEach(([k,v]) => set(`db-${k}`,v));
+  // Bio
+  ['bio-peso','bio-imc','bio-gordura-pct','bio-gordura-kg','bio-massa-magra','bio-massa-muscular',
+   'bio-massa-ossea','bio-visceral','bio-agua','bio-tmb','bio-idade-met']
+    .forEach(id => set(id, d[id]));
+  // IMC/IAC
+  ['imc-peso','imc-alt','iac-q','iac-h','iac-s'].forEach(id => set(id, d[id]));
+  calcIMC(); calcIAC();
+  // RCQ
+  ['rcq-s','rcq-fx','rcq-c','rcq-q','rcq-prof','rcq-obs'].forEach(id => set(id, d[id]));
+  calcRCQ();
+  // Postural
+  ['post-cabeca','post-ombros','post-cervical','post-toracica','post-lombar','post-pelve','post-joelhos','post-pes','post-obs']
+    .forEach(id => set(id, d[id]));
+  // Cardio
+  ['cd-fc-rep','cd-pa','cd-idade','cd-sexo','cd-proto','cd-cooper-dist','cd-harv-1','cd-harv-2','cd-harv-3','cd-milha-t','cd-milha-fc','cd-milha-p','cd-ymca-w','cd-ymca-fc']
+    .forEach(id => set(id, d[id]));
+  atualizarCamposCardio(); calcCardio();
+  // Resultado visual
+  setTimeout(renderResultado, 50);
+}
+
+function coletarDados() {
+  const g = id => document.getElementById(id)?.value || null;
+  const dobras = {};
+  document.querySelectorAll('[id^="db-"]').forEach(el => { if(el.value) dobras[el.id.replace('db-','')] = el.value; });
+  const parq = PARQ_QS.map((_,i) => ({
+    resposta: document.querySelector(`input[name="parq-${i}"]:checked`)?.value || 'Não',
+    obs: g(`parq-txt-${i}`)
+  }));
+  return {
+    'an-objetivos':g('an-objetivos'),'an-pratica':g('an-pratica'),'an-pratica-desc':g('an-pratica-desc'),
+    'an-nutri':g('an-nutri'),'an-sono':g('an-sono'),'an-medicamento':g('an-medicamento'),
+    'an-cirurgia':g('an-cirurgia'),'an-restricao':g('an-restricao'),'an-doenca':g('an-doenca'),
+    parq,
+    'med-pescoco':g('med-pescoco'),'med-ombro':g('med-ombro'),'med-tor-rd':g('med-tor-rd'),
+    'med-tor-re':g('med-tor-re'),'med-tor-id':g('med-tor-id'),'med-tor-ie':g('med-tor-ie'),
+    'med-braco-d':g('med-braco-d'),'med-braco-e':g('med-braco-e'),'med-cintura':g('med-cintura'),
+    'med-abdomen':g('med-abdomen'),'med-quadril':g('med-quadril'),'med-coxa-d':g('med-coxa-d'),
+    'med-coxa-e':g('med-coxa-e'),'med-pant-d':g('med-pant-d'),'med-pant-e':g('med-pant-e'),
+    'cc-sexo':g('cc-sexo'),'cc-idade':g('cc-idade'),'cc-protocolo':g('cc-protocolo'),
+    'cc-peso':g('cc-peso'), dobras,
+    'bio-peso':g('bio-peso'),'bio-imc':g('bio-imc'),'bio-gordura-pct':g('bio-gordura-pct'),
+    'bio-gordura-kg':g('bio-gordura-kg'),'bio-massa-magra':g('bio-massa-magra'),
+    'bio-massa-muscular':g('bio-massa-muscular'),'bio-massa-ossea':g('bio-massa-ossea'),
+    'bio-visceral':g('bio-visceral'),'bio-agua':g('bio-agua'),'bio-tmb':g('bio-tmb'),
+    'bio-idade-met':g('bio-idade-met'),
+    'imc-peso':g('imc-peso'),'imc-alt':g('imc-alt'),'iac-q':g('iac-q'),'iac-h':g('iac-h'),'iac-s':g('iac-s'),
+    'rcq-s':g('rcq-s'),'rcq-fx':g('rcq-fx'),'rcq-c':g('rcq-c'),'rcq-q':g('rcq-q'),
+    'rcq-prof':g('rcq-prof'),'rcq-obs':g('rcq-obs'),
+    'post-cabeca':g('post-cabeca'),'post-ombros':g('post-ombros'),'post-cervical':g('post-cervical'),
+    'post-toracica':g('post-toracica'),'post-lombar':g('post-lombar'),'post-pelve':g('post-pelve'),
+    'post-joelhos':g('post-joelhos'),'post-pes':g('post-pes'),'post-obs':g('post-obs'),
+    'cd-fc-rep':g('cd-fc-rep'),'cd-pa':g('cd-pa'),'cd-idade':g('cd-idade'),'cd-sexo':g('cd-sexo'),
+    'cd-proto':g('cd-proto'),'cd-cooper-dist':g('cd-cooper-dist'),
+    'cd-harv-1':g('cd-harv-1'),'cd-harv-2':g('cd-harv-2'),'cd-harv-3':g('cd-harv-3'),
+    'cd-milha-t':g('cd-milha-t'),'cd-milha-fc':g('cd-milha-fc'),'cd-milha-p':g('cd-milha-p'),
+    'cd-ymca-w':g('cd-ymca-w'),'cd-ymca-fc':g('cd-ymca-fc'),
+  };
+}
+
+async function salvarFicha() {
+  const alunoId = document.getElementById('ficha-aluno-id').value;
+  const data    = document.getElementById('ficha-data').value;
+  if (!alunoId) { toast('Selecione um aluno.','err'); return; }
+  if (!data)    { toast('Informe a data.','err'); return; }
+  const [ano,mes,dia] = data.split('-').map(Number);
+  const dt = new Date(ano,mes-1,dia);
+  if (dt.getDate()!==dia||dt.getMonth()!==mes-1) { toast('Data inválida.','err'); return; }
+  const btn = document.getElementById('btn-sv-ficha');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  const rawDados = coletarDados();
+  const dados = Object.fromEntries(
+    Object.entries(rawDados).filter(([k, v]) => {
+      if (k === 'parq') return true;
+      if (k === 'dobras') return v && Object.keys(v).length > 0;
+      return v !== null && v !== undefined && v !== '';
+    })
+  );
+  const payload = { aluno_id:alunoId, data, dados };
+  try {
+    let err;
+    if (fichaId) ({ error:err } = await db.from('fichas_avaliacao').update(payload).eq('id',fichaId));
+    else {
+      const { data:row, error:e } = await db.from('fichas_avaliacao').insert(payload).select().single();
+      err = e; if (row) fichaId = row.id;
+    }
+    if (err) throw err;
+    toast(fichaId ? 'Ficha atualizada!' : 'Ficha salva!','ok');
+  } catch(e) { console.error(e); toast('Erro ao salvar: '+e.message,'err'); }
+  finally { btn.innerHTML='<i data-lucide="save" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px"></i>Salvar Ficha'; btn.disabled=false; if(window.lucide) lucide.createIcons(); }
+}
+
+function exportarPDF() {
+  const alunoEl = document.getElementById('ficha-aluno-id');
+  const alunoNome = alunoEl?.options[alunoEl?.selectedIndex]?.text || 'Aluno';
+  const data = document.getElementById('ficha-data')?.value || '';
+  const dataFmt = data ? new Date(data + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+  document.title = `Ficha - ${alunoNome}${dataFmt ? ' - ' + dataFmt : ''}`;
+  renderResultado();
+  mudarAba(9);
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { document.title = 'Ficha de Avaliação | Studio Focus'; }, 600);
+  }, 200);
+}
+
+function toast(msg, tipo='ok') {
+  const el = document.getElementById('toast-f');
+  el.textContent = msg;
+  el.style.background = tipo==='ok' ? 'var(--pu)' : '#ef4444';
+  el.style.opacity = '1'; el.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(16px)'; }, 3000);
+}
+</script>
+</body>
+</html>

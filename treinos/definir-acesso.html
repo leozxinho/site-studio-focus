@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definir Acesso | Studio Focus</title>
+    <link rel="icon" href="../img/icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../admin/admin.css">
+    <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('sf-theme')||'dark');})();</script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+<div class="w-full max-w-sm animate-fade">
+    <div class="text-center mb-8">
+        <img src="../img/image.png" alt="Studio Focus" class="h-16 mx-auto object-contain">
+        <p class="text-mt text-xs uppercase tracking-widest mt-2">Configurar Acesso</p>
+    </div>
+
+    <!-- Estado: carregando -->
+    <div id="state-loading" class="glass p-8 rounded-2xl text-center space-y-3">
+        <div class="w-8 h-8 border-2 border-pu border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p class="text-mt text-sm">Verificando link...</p>
+    </div>
+
+    <!-- Estado: link inválido/expirado -->
+    <div id="state-invalid" class="hidden glass p-8 rounded-2xl text-center space-y-4">
+        <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <div>
+            <p class="font-bold text-white">Link inválido ou expirado</p>
+            <p class="text-mt text-xs mt-1">Solicite um novo link ao Studio Focus.</p>
+        </div>
+    </div>
+
+    <!-- Estado: já utilizado -->
+    <div id="state-used" class="hidden glass p-8 rounded-2xl text-center space-y-4">
+        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <div>
+            <p class="font-bold text-white">Acesso já configurado</p>
+            <p class="text-mt text-xs mt-1">Seu acesso já foi definido anteriormente.</p>
+            <a href="./index.html" class="inline-block mt-4 bg-pu text-white text-xs font-bold px-5 py-2.5 rounded-xl">
+                Ir para o login
+            </a>
+        </div>
+    </div>
+
+    <!-- Estado: formulário -->
+    <div id="state-form" class="hidden glass p-8 rounded-2xl space-y-6">
+        <div>
+            <p class="font-bold text-white text-lg">Olá, <span id="aluno-nome-display" class="text-pu2"></span>!</p>
+            <p class="text-mt text-xs mt-1">Defina seu usuário e senha para acessar seus treinos.</p>
+        </div>
+
+        <form id="form-definir" class="space-y-4" onsubmit="salvarAcesso(event)">
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-mt uppercase tracking-wider">Usuário</label>
+                <input type="text" id="input-usuario" required minlength="3" autocomplete="username"
+                    autocorrect="off" autocapitalize="none" spellcheck="false"
+                    class="w-full bg-s2 border border-bd rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-pu transition-all"
+                    placeholder="Ex: joao.silva">
+                <p class="text-[10px] text-mt">Somente letras, números e ponto. Sem espaços.</p>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-mt uppercase tracking-wider">Senha</label>
+                <div class="relative">
+                    <input type="password" id="input-senha" required minlength="6" autocomplete="new-password"
+                        autocorrect="off" autocapitalize="none" spellcheck="false"
+                        class="w-full bg-s2 border border-bd rounded-xl px-4 py-3 pr-11 text-sm text-white focus:outline-none focus:border-pu transition-all"
+                        placeholder="Mínimo 6 caracteres">
+                    <button type="button" onclick="toggleVer('input-senha', this)"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-mt uppercase tracking-wider">Confirmar Senha</label>
+                <div class="relative">
+                    <input type="password" id="input-senha-confirm" required minlength="6" autocomplete="new-password"
+                        autocorrect="off" autocapitalize="none" spellcheck="false"
+                        class="w-full bg-s2 border border-bd rounded-xl px-4 py-3 pr-11 text-sm text-white focus:outline-none focus:border-pu transition-all"
+                        placeholder="Repita a senha">
+                    <button type="button" onclick="toggleVer('input-senha-confirm', this)"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-mt hover:text-white transition-colors p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="form-erro" class="hidden text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs font-medium"></div>
+
+            <button type="submit" id="btn-salvar"
+                class="w-full bg-pu hover:bg-pu/80 text-white font-bold py-3.5 rounded-xl transition-all">
+                Confirmar Acesso
+            </button>
+        </form>
+    </div>
+
+    <!-- Estado: sucesso -->
+    <div id="state-success" class="hidden glass p-8 rounded-2xl text-center space-y-4">
+        <div class="w-14 h-14 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+            <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <div>
+            <p class="font-bold text-white text-lg">Acesso configurado!</p>
+            <p class="text-mt text-xs mt-1">Seu usuário e senha foram salvos com segurança.</p>
+        </div>
+        <a href="./index.html"
+            class="block bg-pu hover:bg-pu/80 text-white font-bold py-3.5 rounded-xl transition-all text-sm">
+            Ir para o login
+        </a>
+    </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL     = 'https://dvjjproexhetqlazftln.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2ampwcm9leGhldHFsYXpmdGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzEwNzUsImV4cCI6MjA5NDI0NzA3NX0._Y22KalUdIzT6TzalVR2haBsUvXeeyBeC_cpwPOTKNk';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let _tokenData = null;
+
+    function toggleVer(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.innerHTML = show
+            ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>`
+            : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    }
+
+    function show(id) {
+        ['state-loading','state-invalid','state-used','state-form','state-success']
+            .forEach(s => document.getElementById(s).classList.toggle('hidden', s !== id));
+    }
+
+    async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const token  = params.get('token');
+
+        if (!token) { show('state-invalid'); return; }
+
+        const { data, error } = await db.rpc('token_acesso_info', { p_token: token });
+
+        if (error || !data || data.status === 'invalido') { show('state-invalid'); return; }
+
+        if (data.status === 'usado') { show('state-used'); return; }
+
+        _tokenData = { token };
+        document.getElementById('aluno-nome-display').textContent = data.primeiro_nome || '';
+
+        // Pré-preenche o usuário se já existir
+        const usuarioAtual = data.usuario || '';
+        if (usuarioAtual) document.getElementById('input-usuario').value = usuarioAtual;
+
+        show('state-form');
+    }
+
+    async function salvarAcesso(event) {
+        event.preventDefault();
+        const erroEl  = document.getElementById('form-erro');
+        const btn     = document.getElementById('btn-salvar');
+        const usuario = document.getElementById('input-usuario').value.trim().toLowerCase();
+        const senha   = document.getElementById('input-senha').value;
+        const confirm = document.getElementById('input-senha-confirm').value;
+
+        erroEl.classList.add('hidden');
+
+        if (!/^[a-z0-9.]{3,30}$/.test(usuario)) {
+            erroEl.textContent = 'Usuário inválido. Use apenas letras, números e ponto (3–30 chars).';
+            erroEl.classList.remove('hidden');
+            return;
+        }
+        if (senha !== confirm) {
+            erroEl.textContent = 'As senhas não coincidem.';
+            erroEl.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+
+        // Validação, hash (bcrypt) e consumo do token acontecem no servidor
+        const { data: res, error } = await db.rpc('token_acesso_definir', {
+            p_token: _tokenData.token, p_usuario: usuario, p_senha: senha
+        });
+
+        if (error || !res?.ok) {
+            if (res?.erro === 'usado')    { show('state-used'); return; }
+            if (res?.erro === 'invalido') { show('state-invalid'); return; }
+            erroEl.textContent = {
+                usuario_em_uso:   'Este usuário já está em uso. Escolha outro.',
+                usuario_invalido: 'Usuário inválido. Use apenas letras, números e ponto (3–30 chars).',
+                senha_curta:      'A senha deve ter pelo menos 6 caracteres.'
+            }[res?.erro] || 'Erro ao salvar. Tente novamente.';
+            erroEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Confirmar Acesso';
+            return;
+        }
+
+        show('state-success');
+    }
+
+    init();
+</script>
+</body>
+</html>

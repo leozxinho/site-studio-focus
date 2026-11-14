@@ -10,10 +10,26 @@
     --mt: #8a8a9e;
     --bd: rgba(255, 255, 255, 0.07);
     --bd2: rgba(255, 255, 255, 0.14);
+    --glass-bg: rgba(10, 26, 46, 0.6);
     --neon-blue: #00f2ff;
     --neon-green: #39ff14;
     --ff: 'Bebas Neue', sans-serif;
     --fb: 'DM Sans', sans-serif;
+}
+
+html[data-theme="light"] {
+    --pu: #0052cc;
+    --pu2: #0066ff;
+    --pu-glow: rgba(0, 82, 204, 0.3);
+    --bg: #f0f4f8;
+    --s1: #ffffff;
+    --s2: #f1f5fb;
+    --s3: #e2eaf5;
+    --tx: #0f172a;
+    --mt: #5a6a88;
+    --bd: rgba(15, 23, 42, 0.1);
+    --bd2: rgba(15, 23, 42, 0.18);
+    --glass-bg: rgba(255, 255, 255, 0.88);
 }
 
 * {
@@ -46,18 +62,64 @@ body {
     background: var(--pu);
 }
 
+.custom-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: var(--bd2);
+    border-radius: 10px;
+}
+
 /* Utility Classes */
 .font-bebas { font-family: var(--ff); }
 .text-pu { color: var(--pu2); }
 .bg-s1 { background-color: var(--s1); }
 .bg-s2 { background-color: var(--s2); }
+.bg-s2\/40 { background-color: color-mix(in srgb, var(--s2) 40%, transparent) !important; }
 
 /* Glassmorphism */
 .glass {
-    background: rgba(10, 26, 46, 0.6);
+    background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--bd);
+}
+
+/* Light theme text corrections */
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4 {
+    color: var(--tx) !important;
+}
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+    color: var(--tx) !important;
+}
+html[data-theme="light"] .nav-btn:not(.active):hover {
+    color: var(--tx);
+}
+
+/* Força text-tx em qualquer elemento no tema claro que ainda use text-white */
+html[data-theme="light"] td.text-white,
+html[data-theme="light"] p.text-white,
+html[data-theme="light"] label.text-white,
+html[data-theme="light"] span.text-white:not([class*="bg-"]),
+html[data-theme="light"] a.text-white:not([class*="bg-"]),
+html[data-theme="light"] div.text-white:not([class*="bg-"]) {
+    color: var(--tx) !important;
+}
+
+
+/* Desabilita autocomplete do navegador em selects globalmente */
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--s2) inset;
+    box-shadow: 0 0 0px 1000px var(--s2) inset;
 }
 
 /* Animations */
@@ -69,3 +131,249 @@ body {
 .animate-fade {
     animation: fadeIn 0.4s ease-out forwards;
 }
+
+@keyframes birthdayShine {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+
+.birthday-name {
+    background: linear-gradient(90deg, #ffffff 20%, #f9a8d4 40%, #ec4899 55%, #f9a8d4 70%, #ffffff 90%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: birthdayShine 2.4s linear infinite;
+}
+
+@keyframes birthdayRing {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,.5); }
+    50%       { box-shadow: 0 0 0 7px rgba(236,72,153,0); }
+}
+
+.birthday-ring {
+    animation: birthdayRing 2s ease-in-out infinite;
+}
+
+@keyframes birthdayBounce {
+    0%, 100% { transform: translateY(0); }
+    40%      { transform: translateY(-4px); }
+    60%      { transform: translateY(-2px); }
+}
+
+.birthday-icon {
+    animation: birthdayBounce 1.6s ease-in-out infinite;
+}
+
+/* Fix: classes orange não presentes no tailwind.css compilado */
+.bg-orange-600           { background-color: #ea580c; }
+.hover\:bg-orange-700:hover { background-color: #c2410c; }
+.bg-orange-500\/10       { background-color: color-mix(in srgb, #f97316 10%, transparent); }
+.bg-orange-500\/20       { background-color: color-mix(in srgb, #f97316 20%, transparent); }
+button[class*="bg-orange-"] { color: #ffffff !important; }
+
+/* Fix: bg-pu sem Tailwind color config */
+.bg-pu { background-color: var(--pu) !important; }
+.bg-pu\/80 { background-color: color-mix(in srgb, var(--pu) 80%, transparent) !important; }
+.hover\:bg-pu:hover { background-color: var(--pu) !important; }
+.hover\:bg-pu\/80:hover { background-color: color-mix(in srgb, var(--pu) 80%, transparent) !important; }
+.shadow-pu\/20 { box-shadow: 0 4px 14px color-mix(in srgb, var(--pu) 20%, transparent); }
+.shadow-pu\/40 { box-shadow: 0 6px 20px color-mix(in srgb, var(--pu) 40%, transparent); }
+.border-pu { border-color: var(--pu) !important; }
+.bg-pu\/10 { background-color: color-mix(in srgb, var(--pu) 10%, transparent) !important; }
+.bg-pu\/15 { background-color: color-mix(in srgb, var(--pu) 15%, transparent) !important; }
+.bg-pu\/20 { background-color: color-mix(in srgb, var(--pu) 20%, transparent) !important; }
+.hover\:bg-pu\/20:hover { background-color: color-mix(in srgb, var(--pu) 20%, transparent) !important; }
+.text-pu2 { color: var(--pu2) !important; }
+.bg-s3 { background-color: var(--s3); }
+
+/* Garante que botões de ação com text-white fiquem visíveis no tema claro */
+button.bg-pu,
+a.bg-pu,
+button[class*="bg-pu"] {
+    color: #ffffff !important;
+    background-color: var(--pu) !important;
+}
+
+/* ── Sidebar: largura fixa no desktop (lg:w-72 não está no CSS compilado) ── */
+@media (min-width: 1024px) {
+    #sidebar { width: 18rem; }
+    #dashboard-content { min-height: 100vh; }
+}
+
+/* ── Mobile UX ──────────────────────────────────────────────────────────────── */
+
+/* Bottom nav active state */
+.bottom-nav-btn:active { transform: scale(0.92); }
+
+/* Altura real da bottom nav inclui safe area do iPhone */
+#bottom-nav {
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Modais como bottom sheet no mobile */
+@media (max-width: 1023px) {
+    /* Overlay alinha ao bottom */
+    [id^="modal-"].fixed {
+        align-items: flex-end !important;
+        padding: 0 !important;
+    }
+
+    /* Card do modal sobe da base */
+    [id^="modal-"].fixed > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0 !important;
+        max-height: 92dvh !important;
+        overflow-y: auto !important;
+        margin: 0 !important;
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
+    }
+
+    /* Sidebar: itens e categorias centralizados no mobile */
+    #sidebar nav .nav-btn {
+        justify-content: center !important;
+    }
+    #sidebar nav p {
+        text-align: center !important;
+        border-bottom: none !important;
+        border-top: 1px solid var(--bd);
+        padding-top: 1rem !important;
+        margin-top: 0.25rem;
+    }
+    #sidebar > div:last-child button {
+        justify-content: center !important;
+    }
+
+    /* Garante padding suficiente no conteúdo principal para não ficar atrás da navbar */
+    #dashboard-content {
+        padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+    }
+
+    /* Banner offline fica acima da bottom nav */
+    #offline-banner {
+        bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Sub-containers com scroll próprio: espaço extra no final */
+    #freq-lista-alunos,
+    #freq-presentes-lista,
+    .kanban-scroll,
+    .custom-scroll {
+        padding-bottom: 8px;
+    }
+
+    /* Tabelas: scroll horizontal com indicador visual */
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .overflow-x-auto::-webkit-scrollbar { display: none; }
+
+    /* Células de tabela mais compactas */
+    #tabela-alunos tbody td,
+    #tabela-pagamentos tbody td,
+    #tabela-despesas tbody td,
+    #tabela-treinos tbody td,
+    #fin-fluxo-tbody td,
+    #fin-cobrancas-tbody td,
+    #loja-estoque-tbody td,
+    #loja-historico-tbody td {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    /* Cabeçalhos de tabela menores */
+    thead th {
+        font-size: 0.7rem !important;
+        padding: 0.6rem 0.75rem !important;
+        white-space: nowrap;
+    }
+
+    /* Botões de ação: toque mínimo de 44px */
+    button, a[role="button"] {
+        min-height: 36px;
+    }
+
+    /* Barra de ação do topo: no mobile mostra só o sino, esconde os botões redundantes */
+    #top-action-bar .top-action-shortcuts { display: none !important; }
+    #top-action-bar button[onclick="abrirModalAluno()"],
+    #top-action-bar button[onclick="abrirModalPagamento()"],
+    #top-action-bar button[onclick="abrirModalWhatsAppMassa()"] {
+        display: none !important;
+    }
+    #top-action-bar {
+        justify-content: flex-end;
+        padding-top: 0.375rem;
+        padding-bottom: 0.375rem;
+    }
+
+    /* Stat cards: 2 colunas no mobile */
+    .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Padding do conteúdo principal menor no mobile */
+    .p-5.lg\:p-7 {
+        padding: 1rem !important;
+    }
+
+    /* Seção título menor */
+    .section-title { font-size: 1.15rem; }
+
+    /* ── Sidebar: esconde seções não essenciais no mobile ───────────────── */
+    #sidebar nav [data-section="leads-crm"],
+    #sidebar nav [data-section="marketing-digital"],
+    #sidebar nav [data-section="loja-estoque"],
+    #sidebar nav [data-section="treinos"] {
+        display: none !important;
+    }
+    /* Esconde o label "Crescimento" já que todos seus itens ficam ocultos */
+    #sidebar nav p:has(+ [data-section="marketing-digital"]) {
+        display: none !important;
+    }
+
+    /* ── Dashboard: esconde gráficos e atividades recentes ──────────────── */
+    .glass:has(#growthChart),
+    .glass:has(#expensesChart),
+    .glass:has(#lista-atividades-tbody) {
+        display: none !important;
+    }
+
+    /* Esconde atalhos que levam a seções ocultas no mobile */
+    button[onclick="navegarPara('leads-crm')"],
+    button[onclick="navegarPara('loja-estoque')"] {
+        display: none !important;
+    }
+
+    /* ── Tabelas: esconde colunas não essenciais no mobile ──────────────── */
+    /* Alunos: oculta "Contrato / Plano" */
+    #tabela-alunos th:nth-child(2),
+    #tabela-alunos td:nth-child(2) { display: none; }
+
+    /* Pagamentos: oculta "Plano" */
+    #tabela-pagamentos th:nth-child(2),
+    #tabela-pagamentos td:nth-child(2) { display: none; }
+
+    /* Financeiro Fluxo de Caixa: oculta "Categoria" e "Método" */
+    #fin-aba-fluxo table th:nth-child(3),
+    #fin-aba-fluxo table td:nth-child(3),
+    #fin-aba-fluxo table th:nth-child(4),
+    #fin-aba-fluxo table td:nth-child(4) { display: none; }
+
+    /* Financeiro Cobranças: oculta "Plano" */
+    #fin-aba-cobrancas table th:nth-child(2),
+    #fin-aba-cobrancas table td:nth-child(2) { display: none; }
+}
+
+/* ── Inadimplente de mês anterior */
+.tr-inadimplente-anterior {
+    background: rgba(239, 68, 68, 0.06);
+    border-left: 3px solid rgba(239, 68, 68, 0.6);
+}
+
+/* Comparativo mensal */
+.comparativo-positivo { color: #10b981; }
+.comparativo-negativo { color: #ef4444; }
+.comparativo-neutro   { color: var(--mt); }
