@@ -1,0 +1,166 @@
+/* DIFERENCIAIS: stacking cards */
+.diff-stack{list-style:none;grid-template-columns:1fr;gap:16px;max-width:720px;margin:0 auto;view-timeline-name:--diff-stack}
+.diff-stack-item{--index0:calc(var(--index) - 1);
+ --start-range:calc(var(--index0) / var(--numcards) * 100%);--end-range:calc(var(--index) / var(--numcards) * 100%)}
+/* desktop: stacking com offset fixo e igual (16px por card) */
+@media (min-width:768px){
+ .diff-stack-item{position:sticky;top:calc(80px + var(--index0) * 16px)}
+}
+.diff-stack .diff-card{min-height:140px;align-items:center;padding:28px 24px;transform-origin:50% 0;will-change:transform}
+.diff-stack .diff-title{font-size:18px}
+.diff-stack .diff-desc{font-size:14px}
+
+/* DEPOIMENTOS: carrossel com swipe no celular (grid no desktop vem do site.css) */
+@media (max-width:767px){
+ .testi-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 -16px;padding:4px 16px 12px;scrollbar-width:none;overscroll-behavior-x:contain}
+ .testi-grid::-webkit-scrollbar{display:none}
+ .testi-card{flex:0 0 85%;scroll-snap-align:center}
+}
+
+/* ===== SCROLL-DRIVEN ANIMATIONS =====
+   CSS nativo (animation-timeline). Sem suporte ou com reduced-motion,
+   o reveal via IntersectionObserver continua funcionando. */
+.scroll-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;pointer-events:none;
+ background:linear-gradient(90deg,var(--pu),var(--pu2),#7dd3fc);box-shadow:0 0 12px var(--pu2);
+ transform-origin:0 50%;transform:scaleX(0);opacity:0}
+
+@supports (animation-timeline: view()){
+@media (prefers-reduced-motion: no-preference){
+
+ /* stacking cards: card de trás encolhe conforme os próximos empilham */
+ @media (min-width:768px){
+  .diff-stack-item:not(:last-child) .diff-card{animation:sdStack linear both;animation-timeline:--diff-stack;
+   animation-range:exit-crossing var(--start-range) exit-crossing var(--end-range)}
+  @keyframes sdStack{to{transform:scale(.95)}}
+ }
+ @media (max-width:767px){
+  .diff-stack .diff-card{animation:sdFadeUp linear both;animation-timeline:view();animation-range:entry 0% entry 100%}
+  .diff-stack-item:nth-child(2) .diff-card{animation-range:entry 10% entry 100%}
+  .diff-stack-item:nth-child(3) .diff-card{animation-range:entry 20% entry 100%}
+ }
+ @keyframes sdFadeUp{from{opacity:0;transform:translateY(24px)}}
+
+ /* NAV encolhe ao rolar */
+ nav{animation:sdNav linear both;animation-timeline:scroll(root block);animation-range:0px 240px}
+ @keyframes sdNav{to{height:calc(48px + env(safe-area-inset-top));box-shadow:0 8px 30px rgba(0,0,0,.16)}}
+ .nav-logo-svg{animation:sdLogo linear both;animation-timeline:scroll(root block);animation-range:0px 240px}
+ @keyframes sdLogo{to{transform:scale(.82)}}
+
+ /* fundo muda de tom ao longo da página */
+ body{animation:sdBg linear both;animation-timeline:scroll(root block)}
+ @keyframes sdBg{
+  0%{background-color:var(--bg)}
+  35%{background-color:color-mix(in srgb,var(--bg) 93%,var(--pu))}
+  70%{background-color:color-mix(in srgb,var(--bg) 93%,#06b6d4)}
+  100%{background-color:var(--bg)}}
+
+ /* ícones se desenham */
+ .diff-card,.location-item{view-timeline:--icon block}
+ .diff-svg>*,.loc-svg>*{stroke-dasharray:100;animation:sdDraw linear both;animation-timeline:--icon;animation-range:entry 0% entry 100%}
+ @keyframes sdDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+
+ /* mapa: fade + leve subida, cantos fixos de 16px */
+ .map-embed.reveal{animation-name:sdMap;border-radius:16px;animation-range:entry 0% entry 40%} /* opaco antes de entrar inteiro */
+ @keyframes sdMap{from{opacity:0;transform:translateY(30px)}}
+
+ /* CTA: palavras acendem */
+ .cta-words .w{animation:sdWord linear both;animation-timeline:view();animation-range:entry 100% cover 10%}
+ @keyframes sdWord{from{opacity:.2}}
+
+ /* planos (dentro do modal): leque */
+ .planos-modal .plan-card.reveal{animation:sdFan linear both;animation-timeline:view();animation-range:entry 0% entry 220px}
+ .planos-modal .plan-club.reveal{animation-name:sdFanR}
+ @keyframes sdFan{from{opacity:0;transform:translateY(-60px) rotate(-5deg) scale(.92)}}
+ @keyframes sdFanR{from{opacity:0;transform:translateY(-60px) rotate(5deg) scale(.92)}}
+
+ /* overflow:hidden cria scroll container e "prende" o view() dos filhos
+    (reveal travava parcial, ex.: botão da CTA a 37%). clip corta igual sem isso. */
+ .hero,.prof-section,.prof-photo-col,.cta-section,.map-embed{overflow:clip}
+
+ /* barra de progresso */
+ .scroll-progress{opacity:1;animation:sdProgress linear both;animation-timeline:scroll(root block)}
+ @keyframes sdProgress{to{transform:scaleX(1)}}
+
+ /* HERO: conteúdo se afasta em profundidade, grid vira piso neon */
+ .hero{view-timeline:--hero block}
+ .hero-inner{animation:sdHeroOut linear both;animation-timeline:--hero;animation-range:exit 30% exit 100%}
+ @keyframes sdHeroOut{to{opacity:0;transform:translateY(-8vh) scale(.94)}}
+ .hero-grid{transform-origin:50% 100%;
+  animation:gridPulse 5s ease-in-out infinite,sdGridWarp linear both;
+  animation-timeline:auto,--hero;animation-range:normal,exit 0% exit 100%}
+ @keyframes sdGridWarp{to{transform:perspective(600px) rotateX(58deg) scale(2.4)}}
+ .hero-bg{animation:sdHeroBg linear both;animation-timeline:--hero;animation-range:exit 0% exit 100%}
+ @keyframes sdHeroBg{to{transform:scale(1.25);filter:hue-rotate(25deg) saturate(1.4)}}
+ .hero h1 em{animation:sdStrokeFill linear both;animation-timeline:--hero;animation-range:exit 0% exit 25%}
+ @keyframes sdStrokeFill{to{color:var(--pu2);text-shadow:0 0 28px rgba(61,154,255,.65)}}
+ .scroll-hint{animation:bounceY 2.2s ease-in-out infinite,sdFadeOut linear both;
+  animation-timeline:auto,--hero;animation-range:normal,exit 0% exit 20%}
+ @keyframes sdFadeOut{to{opacity:0}}
+
+ /* PROFESSOR: foto com parallax + scan line, texto entra pela direita */
+ .prof-photo{animation:sdPhoto linear both,sdPhotoReveal linear both;animation-timeline:view(),view();
+  animation-range:cover 0% cover 100%,entry 0% entry 380px}
+ @keyframes sdPhotoReveal{from{clip-path:circle(8% at 50% 40%)}to{clip-path:circle(150% at 50% 40%)}}
+ @keyframes sdPhoto{from{transform:scale(1.18) translateY(-4%)}to{transform:scale(1) translateY(4%)}}
+ .prof-photo-col::after{content:"";position:absolute;left:0;right:0;height:2px;top:0;z-index:3;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--pu2),transparent);box-shadow:0 0 18px var(--pu2);
+  animation:sdScan linear both;animation-timeline:view();animation-range:entry 10% cover 42%}
+ @keyframes sdScan{0%{top:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:100%;opacity:0}}
+ .prof-content-col>*{animation:sdSlideIn linear both;animation-timeline:view();animation-range:entry 0% entry 100%}
+ @keyframes sdSlideIn{from{opacity:0;transform:translateX(40px)}}
+
+ /* REVEAL genérico: profundidade 3D, termina após 160px de rolagem */
+ .reveal{transition:none;animation:sdReveal linear both;animation-timeline:view();animation-range:entry 0% entry 100%}
+ @keyframes sdReveal{from{opacity:0;transform:perspective(900px) translateY(40px) rotateX(10deg) scale(.97)}}
+ .reveal:nth-child(2){animation-range:entry 10% entry 100%}
+ .reveal:nth-child(3){animation-range:entry 20% entry 100%}
+ .reveal:nth-child(4){animation-range:entry 30% entry 100%}
+ .reveal:nth-child(5){animation-range:entry 40% entry 100%}
+
+ /* rótulo e título: fade-up em sequência (rótulo termina antes do título começar) */
+ .sec-label.reveal{animation-name:sdFadeUp;animation-range:entry 0% entry 100%}
+ .sec-title.reveal,.cta-section h2.reveal{animation-name:sdFadeUp;animation-range:entry 0% entry 100%}
+
+ /* CTA: orb pulsa conforme rolagem */
+ .cta-orb{animation:sdOrb linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+ @keyframes sdOrb{from{transform:translate(-50%,-50%) scale(.4);opacity:0}50%{transform:translate(-50%,-50%) scale(1.6);opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:.6}}
+
+ /* modal de planos rola dentro de overlay: fica fora das timelines */
+ .planos-modal .reveal{animation:none;opacity:1;transform:none;filter:none}
+}
+}
+
+/* ===== CORTINA COM PARALLAX (GSAP + Lenis) — só ativo com html.has-curtain =====
+   Valores do efeito (yPercent, opacidade): js/sticky-sections.js -> SETTINGS.
+   Cantos da cortina: --curtain-r abaixo. */
+:root{--curtain-r:24px}
+@media (max-width:768px){:root{--curtain-r:16px}}
+
+/* Lenis */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
+/* scroll-behavior:smooth (site.css) faz o refresh do ScrollTrigger medir no meio da rolagem
+   e calcular os triggers errado; com a cortina ativa a suavidade vem do Lenis */
+html.has-curtain{scroll-behavior:auto!important}
+
+/* toda seção vira posicionada (z-index crescente vem do JS) */
+:where(.has-curtain [data-section]){position:relative;background-color:inherit} /* especificidade 0: fundos próprios vencem */
+.has-curtain .diff-section{background-color:inherit;background-image:linear-gradient(rgba(0,102,255,.04),rgba(0,102,255,.04))}
+.has-curtain .footer-bottom{position:relative;background-color:inherit}
+
+/* seção com cortina: --stick-top vem do JS.
+   Curta: logo abaixo do menu. Alta: 100svh - altura (negativo, só segura depois de lida). */
+.has-curtain [data-curtain]{position:sticky;top:var(--stick-top,0px);overflow:clip}
+
+/* a próxima sobe por cima como cortina: cantos superiores + sombra (fixos, sem animar) */
+.has-curtain .curtain-next{border-top-left-radius:var(--curtain-r);border-top-right-radius:var(--curtain-r);
+ box-shadow:0 -20px 40px rgba(0,0,0,.15);overflow:clip}
+
+/* gatilho estático da cortina (JS): não ocupa espaço */
+.curtain-marker{height:0;margin:0;padding:0;pointer-events:none}
+
+/* escurecimento azul-marinho (só opacity anima) */
+.curtain-dim{position:absolute;inset:0;background:rgb(10,15,40);opacity:0;pointer-events:none;z-index:50}
